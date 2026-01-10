@@ -1,4 +1,4 @@
-###pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
+###pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib openpyxl
 #Enable the APIs: In the Google Cloud Console, create a new project and enable the Google Docs API and Google Drive API.
 #Create Credentials: Set up an OAuth 2.0 client ID (selecting "Desktop app" is a common quickstart option) and download the credentials.json file to your project directory.
 #Install Libraries: Install the required Python packages:
@@ -10,6 +10,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 #from googleapicliclient.errors import HttpError
 from googleapiclient.errors import HttpError
+
+from openpyxl import Workbook
+from openpyxl.styles import Font
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
@@ -110,15 +113,32 @@ def process_doc(DOCUMENT_ID):
 def missing_entries_report():
 	global missing_entries
 
+	wb = Workbook()
+	ws = wb.active
+	ws.title = 'missing entries'
+	ws.column_dimensions['A'].width = 15
+	ws.column_dimensions['B'].width = 35
+
 	print('')
 	print('*' * 40)
 	print("*     missing entries report")
 	print('*' * 40)
+	ws.append(['Teacher', 'Missing reports', 'Link'])
 	for teacher,missings in missing_entries.items():
 		print(f'{teacher} is missing writeups in {len(missings)} reports:')
+		ws.append([teacher])
 		for rep_name,rep_id in missings:
 			url = f"https://docs.google.com/document/d/{rep_id}/edit"
 			print(f'\t{rep_name} ({url})')
+			ws.append(['', rep_name, url])
+
+	bold_font = Font(bold=True)
+	ws['A1'].font = bold_font
+	ws['B1'].font = bold_font
+	ws['C1'].font = bold_font
+
+	#save spreadsheet
+	wb.save(filename='missing entries report.xlsx')
 
 
 def open_doc(DOCUMENT_ID):
