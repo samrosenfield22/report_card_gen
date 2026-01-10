@@ -12,7 +12,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ["https://www.googleapis.com/auth/documents"]
+#SCOPES = ["https://www.googleapis.com/auth/documents"]
+SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 # The ID of a sample document.
 #DOCUMENT_ID = "1K4yo7Jqpba9rkLb021mCWPqHD49buXG_KsWSAonlFsk"
@@ -31,9 +32,7 @@ expected_font_size = 10
 def authenticate_drive_api():
 	global service
 
-	"""Shows basic usage of the Google Docs API.
-	Prints the title and some paragraphs from a sample document.
-	"""
+
 	creds = None
 	# The file token.json stores the user's access and refresh tokens, and is
 	# created automatically when the authorization flow completes for the first
@@ -54,12 +53,9 @@ def authenticate_drive_api():
 			token.write(creds.to_json())
 
 	try:
-		service = build("docs", "v1", credentials=creds)
-		#service = build("drive", "v3", credentials=creds)
-		#return service
-		# Retrieve the documents contents from the Docs service.
-		#document = service.documents().get(documentId=DOCUMENT_ID).execute()
-		#return document
+		#service = build("docs", "v1", credentials=creds)
+		service = build("drive", "v3", credentials=creds)
+
 
 	except HttpError as err:
 		print(err)
@@ -254,18 +250,19 @@ def process_table_elements(teacher, table):
 def main():
 	authenticate_drive_api()
 
-	#docs = folder_iterate('1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9')
-	#for doc in docs:
-	#	id = doc["ID"]
-	#	print(f"doc: {id}")
-	#exit()
+	docs = folder_iterate('1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9')
+	for doc in docs:
+		#id = doc["id"]
+		#print(f"doc: {id}")
+		print(f'doc {doc["name"]} ({doc["id"]})')
+
+		#process_doc(doc["id"])
+	exit()
 
 	process_doc(DOCUMENT_ID)
 
 	# outputs
-
 	missing_entries_report()
-
 	global font_fixes
 	print(f'\n\nTotal font fixes: {font_fixes}')
 
