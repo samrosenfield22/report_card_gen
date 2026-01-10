@@ -20,6 +20,10 @@ DOCUMENT_ID = "1FrCP4A0NT3k_6BqkPnrtqO_-jGpeXpXQj63zSHOqIkc"
 
 service = None
 
+font_fixes = 0
+expected_font_family = 'Garamond'
+expected_font_size = 10
+
 def open_doc(doc_id):
 	global service
 
@@ -78,7 +82,7 @@ def get_tables(document):
 			table = element.get('table')
 			#hdr_text = prev_elem.get('paragraph').get('elements').get('textRun').get('content')
 			hdr_text = prev_elem.get('paragraph').get('elements')[0].get('textRun').get('content')
-			teacher = hdr_text.replace('Teacher: ', '')
+			teacher = hdr_text.replace('Teacher: ', '').rstrip()
 			#print(f"table w hdr: {teacher}")
 			#print(table)
 			all_tables.append([teacher, table])
@@ -86,15 +90,16 @@ def get_tables(document):
 	return all_tables
 
 def fix_text_font_style(start, end):
-	# Define the new text style
+	global font_fixes
+
 	new_text_style = {
 		'weightedFontFamily': {
-			'fontFamily': 'Garamond' # Specify the desired font name
+			'fontFamily': expected_font_family
 		},
 		'bold': False,
 		'italic': False,
 		'fontSize': {
-			'magnitude': 10,
+			'magnitude': expected_font_size,
 			'unit': "PT"
 		}
 	}
@@ -123,7 +128,8 @@ def fix_text_font_style(start, end):
 			documentId=DOCUMENT_ID,
 			body={'requests': requests}
 		).execute()
-		print(f"Font updated successfully for the specified range in document")
+		#print(f"Font updated successfully for the specified range in document")
+		font_fixes+=1
 	except Exception as e:
 		print(f"An error occurred: {e}")
 
@@ -146,8 +152,7 @@ def process_table_elements(teacher, table):
 							cell_text += text_run.get('content')
 							if r is 1 and c is 2 and not cell_text.strip():
 								#empty cell
-								print('empty cell in doc!')
-								print(f'great job, {teacher}!')
+								print(f'missing report card text! great job, {teacher}!')
 							style = text_run.get('textStyle')
 							if style:
 								#print(style)
@@ -159,13 +164,13 @@ def process_table_elements(teacher, table):
 								#print(font_family)
 								#print(font_size_pt)
 
-								if not((font_family == 'Garamond') and (font_size_pt == 10)):
+								if not((font_family == expected_font_family) and (font_size_pt == expected_font_size)):
 									start = run.get("startIndex")
 									end = run.get("endIndex")
-									print(f'wee woo wee woo! text w wrong font in row {r}, col {c}')
-									print(f'run from {start} to {end}')
+									print(f'fixing text w wrong font')
+									#print(f'run from {start} to {end}')
 									print(f'great job, {teacher}!')
-									#fix_text_font_style(start, end)
+									fix_text_font_style(start, end)
 			current_row_cells.append(cell_text.strip())
 		current_table_rows.append(current_row_cells)
 	table_data.append(current_table_rows)
@@ -189,6 +194,8 @@ def main():
 	for t in metatables:
 		process_table_elements(t[0],t[1])
 
+	global font_fixes
+	print(f'made {font_fixes} font fixes')
 	#print(tab_elems)
 
 	#print(text)
