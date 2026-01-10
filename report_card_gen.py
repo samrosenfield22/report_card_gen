@@ -1,0 +1,185 @@
+###pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib
+#Enable the APIs: In the Google Cloud Console, create a new project and enable the Google Docs API and Google Drive API.
+#Create Credentials: Set up an OAuth 2.0 client ID (selecting "Desktop app" is a common quickstart option) and download the credentials.json file to your project directory.
+#Install Libraries: Install the required Python packages:
+
+import os.path
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+#from googleapicliclient.errors import HttpError
+from googleapiclient.errors import HttpError
+
+# If modifying these scopes, delete the file token.json.
+SCOPES = ["https://www.googleapis.com/auth/documents"]
+
+# The ID of a sample document.
+#DOCUMENT_ID = "1K4yo7Jqpba9rkLb021mCWPqHD49buXG_KsWSAonlFsk"
+DOCUMENT_ID = "1N2Ix6JhuXWaGc2DqblQBM9Be5RL4OGml7t8xLzo-3ls"
+
+service = None
+
+def open_doc(doc_id):
+	global service
+
+	"""Shows basic usage of the Google Docs API.
+	Prints the title and some paragraphs from a sample document.
+	"""
+	creds = None
+	# The file token.json stores the user's access and refresh tokens, and is
+	# created automatically when the authorization flow completes for the first
+	# time.
+	if os.path.exists("token.json"):
+		creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+	# If there are no valid credentials available, let the user log in.
+	if not creds or not creds.valid:
+		if creds and creds.expired and creds.refresh_token:
+			creds.refresh(Request())
+		else:
+			flow = InstalledAppFlow.from_client_secrets_file(
+				"credentials.json", SCOPES
+			)
+			creds = flow.run_local_server(port=0)
+		# Save the credentials for the next run
+		with open("token.json", "w") as token:
+			token.write(creds.to_json())
+
+	try:
+		service = build("docs", "v1", credentials=creds)
+
+		# Retrieve the documents contents from the Docs service.
+		document = service.documents().get(documentId=DOCUMENT_ID).execute()
+		return document
+
+		#print(f"The title of the document is: {document.get('title')}")
+		# Further processing of document content (body elements) can be done here
+		# to extract paragraphs, tables, etc.
+
+	except HttpError as err:
+		print(err)
+
+def get_text(doc):
+	content = doc.get('body').get('content')
+	text = ""
+	for element in content:
+		if element.get('paragraph'):
+			for el in element.get('paragraph').get('elements'):
+				if el.get('textRun'):
+					text += el.get('textRun').get('content')
+
+def get_tables(document):
+	content = document.get('body').get('content')
+
+	all_tables = []
+	for element in content:
+		# Check if the structural element is a table
+		if element.get('table') is not None:
+			table = element.get('table')
+			#print(table)
+			all_tables.append(table)
+	return all_tables
+
+def fix_text_font_style(start, end):
+	# Define the new text style
+	new_text_style = {
+		'weightedFontFamily': {
+			'fontFamily': 'Garamond' # Specify the desired font name
+		},
+		'bold': False,
+		'italic': False,
+		'fontSize': {
+			'magnitude': 12,
+			'unit': "PT"
+		}
+	}
+
+	# Define the range of text to format (e.g., from index 1 to 10)
+	# Note: Indices are 1-based in the API
+	text_range = {
+		'startIndex': start,
+		'endIndex': end
+	}
+
+	# Create the update request
+	requests = [
+		{
+			'updateTextStyle': {
+				'range': text_range,
+				'textStyle': new_text_style,
+				'fields': 'weightedFontFamily,fontSize,bold,italic' # Specify the fields to update
+			}
+		}
+	]
+
+	# Execute the batch update request
+	try:
+		service.documents().batchUpdate(
+			documentId=DOCUMENT_ID,
+			body={'requests': requests}
+		).execute()
+		print(f"Font updated successfully for the specified range in document")
+	except Exception as e:
+		print(f"An error occurred: {e}")
+
+def get_table_elements(table):
+	table_data = []
+	current_table_rows = []
+	#for row in table.get('tableRows'):
+	for r, row in enumerate(table.get('tableRows')):
+		current_row_cells = []
+		#for cell in row.get('tableCells'):
+		for c, cell in enumerate(row.get('tableCells')):
+			cell_text = ""
+			# A cell can contain multiple content elements (paragraphs, lists, etc.)
+			for cell_content in cell.get('content'):
+				if 'paragraph' in cell_content:
+					for run in cell_content.get('paragraph').get('elements'):
+						if 'textRun' in run:
+							text_run = run.get('textRun')
+							#print(text_run)
+							cell_text += text_run.get('content')
+							style = text_run.get('textStyle')
+							if style:
+								#print(style)
+								font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
+								font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
+								#font_size_pt = style.getFontSize()
+
+								#print("font info:")
+								#print(font_family)
+								#print(font_size_pt)
+
+								if not((font_family == 'Garamond') and (font_size_pt == 12)):
+									start = run.get("startIndex")
+									end = run.get("endIndex")
+									print(f'wee woo wee woo! text w wrong font in row {r}, col {c}')
+									print(f'run from {start} to {end}')
+									fix_text_font_style(start, end)
+			current_row_cells.append(cell_text.strip())
+		current_table_rows.append(current_row_cells)
+	table_data.append(current_table_rows)
+
+	return table_data
+
+
+
+def main():
+	doc = open_doc(DOCUMENT_ID)
+	print(f"The title of the document is: {doc.get('title')}")
+	#print(doc)
+
+	#tab_elems = get_table_elements(doc)
+	tables = get_tables(doc)
+	print(f"found {len(tables)} table(s)")
+
+	for t in tables:
+		get_table_elements(t)
+
+	#print(tab_elems)
+
+	#print(text)
+	#return text
+
+if __name__ == "__main__":
+	main()
