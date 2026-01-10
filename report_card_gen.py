@@ -19,12 +19,16 @@ SCOPES = ["https://www.googleapis.com/auth/documents"]
 DOCUMENT_ID = "1FrCP4A0NT3k_6BqkPnrtqO_-jGpeXpXQj63zSHOqIkc"
 
 service = None
+current_doc_title = ''
+
+#
+missing_entries = {}
 
 font_fixes = 0
 expected_font_family = 'Garamond'
 expected_font_size = 10
 
-def open_doc(doc_id):
+def authenticate_drive_api():
 	global service
 
 	"""Shows basic usage of the Google Docs API.
@@ -51,14 +55,76 @@ def open_doc(doc_id):
 
 	try:
 		service = build("docs", "v1", credentials=creds)
-
+		#service = build("drive", "v3", credentials=creds)
+		#return service
 		# Retrieve the documents contents from the Docs service.
-		document = service.documents().get(documentId=DOCUMENT_ID).execute()
-		return document
+		#document = service.documents().get(documentId=DOCUMENT_ID).execute()
+		#return document
 
 	except HttpError as err:
 		print(err)
-		return None
+		#return None
+
+def folder_iterate(folder_id):
+	"""
+	Lists all files in a specific Google Drive folder ID.
+	"""
+	global service
+	items = []
+	page_token = None
+	try:
+		while True:
+			# Query to list files where the 'parent' is the specified folder ID
+			# and it's not a folder itself (to list 'docs'/files only)
+			query = f"'{folder_id}' in parents and mimeType != 'application/vnd.google-apps.folder'"
+			results = service.files().list(
+				q=query,
+				pageSize=10, # Adjust pageSize as needed
+				fields="nextPageToken, files(id, name, mimeType)",
+				pageToken=page_token,
+				supportsAllDrives=True, # Include this if working with shared drives
+				includeItemsFromAllDrives=True).execute()
+
+			items.extend(results.get('files', []))
+			print(items)
+			page_token = results.get('nextPageToken', None)
+			if page_token is None:
+				break
+	except HttpError as error:
+		print(f'An error occurred: {error}')
+		return []
+
+	return items
+
+def process_doc(DOCUMENT_ID):
+	doc = open_doc(DOCUMENT_ID)
+	print(f"The title of the document is: {current_doc_title}")
+
+	#tab_elems = process_table_elements(doc)
+	metatables = get_tables(doc)
+	print(f"found {len(metatables)} table(s)")
+
+	for t in metatables:
+		process_table_elements(t[0],t[1])
+
+def missing_entries_report():
+	global missing_entries
+
+	print('')
+	print('*' * 40)
+	print("*     missing entries report")
+	print('*' * 40)
+	for teacher,reportnames in missing_entries.items():
+		print(f'{teacher} is missing reports in:')
+		for rep_name in reportnames:
+			print(f'\t{rep_name}')
+
+
+def open_doc(DOCUMENT_ID):
+	document = service.documents().get(documentId=DOCUMENT_ID).execute()
+	global current_doc_title
+	current_doc_title = document.get('title')
+	return document
 
 def get_text(doc):
 	content = doc.get('body').get('content')
@@ -134,6 +200,10 @@ def fix_text_font_style(start, end):
 		print(f"An error occurred: {e}")
 
 def process_table_elements(teacher, table):
+	#global
+	global missing_entries
+	global current_doc_title
+
 	table_data = []
 	current_table_rows = []
 	#for row in table.get('tableRows'):
@@ -152,7 +222,9 @@ def process_table_elements(teacher, table):
 							cell_text += text_run.get('content')
 							if r is 1 and c is 2 and not cell_text.strip():
 								#empty cell
-								print(f'missing report card text! great job, {teacher}!')
+								missing_entries.setdefault(teacher, [])
+								missing_entries[teacher].append(current_doc_title)
+								#print(f'missing report card text! great job, {teacher}!')
 							style = text_run.get('textStyle')
 							if style:
 								#print(style)
@@ -180,26 +252,23 @@ def process_table_elements(teacher, table):
 
 
 def main():
-	doc = open_doc(DOCUMENT_ID)
-	if doc is None:
-		print("could not connect to internet")
-		exit()
-	print(f"The title of the document is: {doc.get('title')}")
-	#print(doc)
+	authenticate_drive_api()
 
-	#tab_elems = process_table_elements(doc)
-	metatables = get_tables(doc)
-	print(f"found {len(metatables)} table(s)")
+	#docs = folder_iterate('1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9')
+	#for doc in docs:
+	#	id = doc["ID"]
+	#	print(f"doc: {id}")
+	#exit()
 
-	for t in metatables:
-		process_table_elements(t[0],t[1])
+	process_doc(DOCUMENT_ID)
+
+	# outputs
+
+	missing_entries_report()
 
 	global font_fixes
-	print(f'made {font_fixes} font fixes')
-	#print(tab_elems)
+	print(f'\n\nTotal font fixes: {font_fixes}')
 
-	#print(text)
-	#return text
 
 if __name__ == "__main__":
 	main()
