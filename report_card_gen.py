@@ -20,14 +20,12 @@ SCOPES = [
 
 ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
 
-# The ID of a sample document.
-#DOCUMENT_ID = "1K4yo7Jqpba9rkLb021mCWPqHD49buXG_KsWSAonlFsk"
-DOCUMENT_ID = "1FrCP4A0NT3k_6BqkPnrtqO_-jGpeXpXQj63zSHOqIkc"
 
 drive_service = None
 docs_service = None
 
 current_doc_title = ''
+current_doc_id = ''
 
 #
 missing_entries = {}
@@ -36,7 +34,7 @@ font_fixes = 0
 expected_font_family = 'Garamond'
 expected_font_size = 10
 
-def authenticate_drive_api():
+def authenticate_google_services():
 	global drive_service, docs_service
 
 	creds = None
@@ -116,26 +114,28 @@ def missing_entries_report():
 	print('*' * 40)
 	print("*     missing entries report")
 	print('*' * 40)
-	for teacher,reportnames in missing_entries.items():
-		print(f'{teacher} is missing writeups in {len(reportnames)} reports:')
-		for rep_name in reportnames:
-			print(f'\t{rep_name}')
+	for teacher,missings in missing_entries.items():
+		print(f'{teacher} is missing writeups in {len(missings)} reports:')
+		for rep_name,rep_id in missings:
+			url = f"https://docs.google.com/document/d/{rep_id}/edit"
+			print(f'\t{rep_name} ({url})')
 
 
 def open_doc(DOCUMENT_ID):
 	document = docs_service.documents().get(documentId=DOCUMENT_ID).execute()
-	global current_doc_title
+	global current_doc_id, current_doc_title
+	current_doc_id = DOCUMENT_ID
 	current_doc_title = document.get('title')
 	return document
 
-def get_text(doc):
-	content = doc.get('body').get('content')
-	text = ""
-	for element in content:
-		if element.get('paragraph'):
-			for el in element.get('paragraph').get('elements'):
-				if el.get('textRun'):
-					text += el.get('textRun').get('content')
+#def get_text(doc):
+#	content = doc.get('body').get('content')
+#	text = ""
+#	for element in content:
+#		if element.get('paragraph'):
+#			for el in element.get('paragraph').get('elements'):
+#				if el.get('textRun'):
+#					text += el.get('textRun').get('content')
 
 def get_tables(document):
 	content = document.get('body').get('content')
@@ -193,7 +193,7 @@ def fix_text_font_style(start, end):
 	# Execute the batch update request
 	try:
 		docs_service.documents().batchUpdate(
-			documentId=DOCUMENT_ID,
+			documentId=current_doc_id,
 			body={'requests': requests}
 		).execute()
 		#print(f"Font updated successfully for the specified range in document")
@@ -222,29 +222,35 @@ def process_table_elements(teacher, table):
 							text_run = run.get('textRun')
 							#print(text_run)
 							cell_text += text_run.get('content')
-							if r is 1 and c is 2 and not cell_text.strip():
-								#empty cell
-								missing_entries.setdefault(teacher, [])
-								missing_entries[teacher].append(current_doc_title)
-								#print(f'missing report card text! great job, {teacher}!')
 							style = text_run.get('textStyle')
 							if style:
 								#print(style)
 								font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
 								font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
+								font_is_bold = style.get('bold', False)
+								font_is_italic = style.get('italic', False)
+
+								#print(f'bold = {font_is_bold}')
 								#font_size_pt = style.getFontSize()
 
 								#print("font info:")
 								#print(font_family)
 								#print(font_size_pt)
 
-								if not((font_family == expected_font_family) and (font_size_pt == expected_font_size)):
+								if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
+									print(style)
 									start = run.get("startIndex")
 									end = run.get("endIndex")
-									print(f'fixing text w wrong font')
+									print(f'\t\tfixing text w wrong font... great job, {teacher}!')
 									#print(f'run from {start} to {end}')
-									print(f'great job, {teacher}!')
 									fix_text_font_style(start, end)
+			#if the entire cell is empty, add to the list of missing teacher entries
+			if r is 1 and c is 2 and not cell_text.strip():
+				#empty cell
+				missing_entries.setdefault(teacher, [])
+				missing_entries[teacher].append([current_doc_title, current_doc_id])
+				#print(f'missing report card text! great job, {teacher}!')
+
 			current_row_cells.append(cell_text.strip())
 		current_table_rows.append(current_row_cells)
 	table_data.append(current_table_rows)
@@ -254,21 +260,26 @@ def process_table_elements(teacher, table):
 
 
 def main():
-	authenticate_drive_api()
+	print('\n\n\n')
+	authenticate_google_services()
 
 	for folder_id in ALL_DIRECTORIES:
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
-			print(f'\t\t> doc {doc["name"]} ({doc["id"]})')
+			print(f'> doc {doc["name"]} ({doc["id"]})')
 			process_doc(doc["id"])
 	#	exit()
 
 	#process_doc(DOCUMENT_ID)
 
 	# outputs
-	missing_entries_report()
+	if missing_entries:
+		missing_entries_report()
 	global font_fixes
 	print(f'\n\nTotal font fixes: {font_fixes}')
+
+	reports_ready = not missing_entries
+	print(f'reports ready? {reports_ready}')
 
 
 if __name__ == "__main__":
