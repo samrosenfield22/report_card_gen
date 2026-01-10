@@ -258,7 +258,7 @@ def process_table_elements(teacher, table):
 								#print(font_size_pt)
 
 								if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
-									print(style)
+									#print(style)
 									start = run.get("startIndex")
 									end = run.get("endIndex")
 									print(f'\t\tfixing text w wrong font... great job, {teacher}!')
@@ -286,20 +286,19 @@ def main():
 	for folder_id in ALL_DIRECTORIES:
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
-			print(f'> doc {doc["name"]} ({doc["id"]})')
+			print(f'> reading doc {doc["name"]}')
 			process_doc(doc["id"])
-	#	exit()
+	print('\nFinished processing all report cards')
 
 	#process_doc(DOCUMENT_ID)
 
 	# outputs
-	if missing_entries:
-		missing_entries_report()
 	global font_fixes
 	print(f'\n\nTotal font fixes: {font_fixes}')
 
-	reports_ready = not missing_entries
-	print(f'reports ready? {reports_ready}')
+	missing_entries_report()
+	if not missing_entries:
+		print('\nReports are complete and ready to go out to parents!!!')
 
 
 if __name__ == "__main__":
