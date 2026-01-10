@@ -12,8 +12,11 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-#SCOPES = ["https://www.googleapis.com/auth/documents"]
-SCOPES = ["https://www.googleapis.com/auth/drive"]
+SCOPES = [
+	"https://www.googleapis.com/auth/documents",
+	"https://www.googleapis.com/auth/drive"
+]
+#SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
 
@@ -21,7 +24,9 @@ ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
 #DOCUMENT_ID = "1K4yo7Jqpba9rkLb021mCWPqHD49buXG_KsWSAonlFsk"
 DOCUMENT_ID = "1FrCP4A0NT3k_6BqkPnrtqO_-jGpeXpXQj63zSHOqIkc"
 
-service = None
+drive_service = None
+docs_service = None
+
 current_doc_title = ''
 
 #
@@ -32,8 +37,7 @@ expected_font_family = 'Garamond'
 expected_font_size = 10
 
 def authenticate_drive_api():
-	global service
-
+	global drive_service, docs_service
 
 	creds = None
 	# The file token.json stores the user's access and refresh tokens, and is
@@ -56,8 +60,8 @@ def authenticate_drive_api():
 
 	try:
 		#service = build("docs", "v1", credentials=creds)
-		service = build("drive", "v3", credentials=creds)
-
+		drive_service = build("drive", "v3", credentials=creds)
+		docs_service = build("docs", "v1", credentials=creds)
 
 	except HttpError as err:
 		print(err)
@@ -67,7 +71,7 @@ def folder_get_docs(folder_id):
 	"""
 	Lists all files in a specific Google Drive folder ID.
 	"""
-	global service
+	global drive_service
 	items = []
 	page_token = None
 	try:
@@ -75,7 +79,7 @@ def folder_get_docs(folder_id):
 			# Query to list files where the 'parent' is the specified folder ID
 			# and it's not a folder itself (to list 'docs'/files only)
 			query = f"'{folder_id}' in parents and mimeType != 'application/vnd.google-apps.folder'"
-			results = service.files().list(
+			results = drive_service.files().list(
 				q=query,
 				pageSize=10, # Adjust pageSize as needed
 				fields="nextPageToken, files(id, name, mimeType)",
@@ -96,11 +100,11 @@ def folder_get_docs(folder_id):
 
 def process_doc(DOCUMENT_ID):
 	doc = open_doc(DOCUMENT_ID)
-	print(f"The title of the document is: {current_doc_title}")
+	#print(f"The title of the document is: {current_doc_title}")
 
 	#tab_elems = process_table_elements(doc)
 	metatables = get_tables(doc)
-	print(f"found {len(metatables)} table(s)")
+	#print(f"found {len(metatables)} table(s)")
 
 	for t in metatables:
 		process_table_elements(t[0],t[1])
@@ -113,13 +117,13 @@ def missing_entries_report():
 	print("*     missing entries report")
 	print('*' * 40)
 	for teacher,reportnames in missing_entries.items():
-		print(f'{teacher} is missing reports in:')
+		print(f'{teacher} is missing writeups in {len(reportnames)} reports:')
 		for rep_name in reportnames:
 			print(f'\t{rep_name}')
 
 
 def open_doc(DOCUMENT_ID):
-	document = service.documents().get(documentId=DOCUMENT_ID).execute()
+	document = docs_service.documents().get(documentId=DOCUMENT_ID).execute()
 	global current_doc_title
 	current_doc_title = document.get('title')
 	return document
@@ -188,7 +192,7 @@ def fix_text_font_style(start, end):
 
 	# Execute the batch update request
 	try:
-		service.documents().batchUpdate(
+		docs_service.documents().batchUpdate(
 			documentId=DOCUMENT_ID,
 			body={'requests': requests}
 		).execute()
@@ -255,11 +259,11 @@ def main():
 	for folder_id in ALL_DIRECTORIES:
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
-			print(f'doc {doc["name"]} ({doc["id"]})')
-			#process_doc(doc["id"])
-		exit()
+			print(f'\t\t> doc {doc["name"]} ({doc["id"]})')
+			process_doc(doc["id"])
+	#	exit()
 
-	process_doc(DOCUMENT_ID)
+	#process_doc(DOCUMENT_ID)
 
 	# outputs
 	missing_entries_report()
