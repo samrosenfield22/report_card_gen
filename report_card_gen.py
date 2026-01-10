@@ -15,6 +15,8 @@ from googleapiclient.errors import HttpError
 #SCOPES = ["https://www.googleapis.com/auth/documents"]
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
+ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
+
 # The ID of a sample document.
 #DOCUMENT_ID = "1K4yo7Jqpba9rkLb021mCWPqHD49buXG_KsWSAonlFsk"
 DOCUMENT_ID = "1FrCP4A0NT3k_6BqkPnrtqO_-jGpeXpXQj63zSHOqIkc"
@@ -61,7 +63,7 @@ def authenticate_drive_api():
 		print(err)
 		#return None
 
-def folder_iterate(folder_id):
+def folder_get_docs(folder_id):
 	"""
 	Lists all files in a specific Google Drive folder ID.
 	"""
@@ -82,7 +84,7 @@ def folder_iterate(folder_id):
 				includeItemsFromAllDrives=True).execute()
 
 			items.extend(results.get('files', []))
-			print(items)
+			#print(items)
 			page_token = results.get('nextPageToken', None)
 			if page_token is None:
 				break
@@ -250,14 +252,12 @@ def process_table_elements(teacher, table):
 def main():
 	authenticate_drive_api()
 
-	docs = folder_iterate('1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9')
-	for doc in docs:
-		#id = doc["id"]
-		#print(f"doc: {id}")
-		print(f'doc {doc["name"]} ({doc["id"]})')
-
-		#process_doc(doc["id"])
-	exit()
+	for folder_id in ALL_DIRECTORIES:
+		docs = folder_get_docs(folder_id)
+		for doc in docs:
+			print(f'doc {doc["name"]} ({doc["id"]})')
+			#process_doc(doc["id"])
+		exit()
 
 	process_doc(DOCUMENT_ID)
 
