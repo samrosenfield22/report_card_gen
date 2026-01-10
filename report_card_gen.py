@@ -11,8 +11,14 @@ from googleapiclient.discovery import build
 #from googleapicliclient.errors import HttpError
 from googleapiclient.errors import HttpError
 
+#output to excel
 from openpyxl import Workbook
 from openpyxl.styles import Font
+
+#export pdfs
+import io
+import shutil
+from googleapiclient.http import MediaIoBaseDownload
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
@@ -110,7 +116,7 @@ def process_doc(DOCUMENT_ID):
 	for t in metatables:
 		process_table_elements(t[0],t[1])
 
-def missing_entries_report():
+def missing_entries_report(outdir):
 	global missing_entries
 
 	wb = Workbook()
@@ -121,7 +127,7 @@ def missing_entries_report():
 
 	print('')
 	print('*' * 40)
-	print("*     missing entries report")
+	print("*	 missing entries report")
 	print('*' * 40)
 	ws.append(['Teacher', 'Missing reports', 'Link'])
 	for teacher,missings in missing_entries.items():
@@ -138,7 +144,8 @@ def missing_entries_report():
 	ws['C1'].font = bold_font
 
 	#save spreadsheet
-	wb.save(filename='missing entries report.xlsx')
+	outfile = outdir + 'missing entries report.xlsx'
+	wb.save(filename=outfile)
 
 
 def open_doc(DOCUMENT_ID):
@@ -265,6 +272,7 @@ def process_table_elements(teacher, table):
 									#print(f'run from {start} to {end}')
 									fix_text_font_style(start, end)
 			#if the entire cell is empty, add to the list of missing teacher entries
+			#print(cell_text.strip())
 			if r is 1 and c is 2 and not cell_text.strip():
 				#empty cell
 				missing_entries.setdefault(teacher, [])
@@ -277,6 +285,29 @@ def process_table_elements(teacher, table):
 
 	return table_data
 
+def export_google_doc_as_pdf(file_id, output_path):
+	#print(f"Starting download of file ID: {file_id} as PDF...")
+
+	# Use the export_media method for Google Workspace formats
+	request = drive_service.files().export_media(
+		fileId=file_id,
+		mimeType='application/pdf'
+	)
+
+	# Handle the download in chunks
+	fh = io.BytesIO()
+	downloader = MediaIoBaseDownload(fh, request)
+	done = False
+	while done is False:
+		status, done = downloader.next_chunk()
+		print(f"Download progress: {int(status.progress() * 100)}%")
+
+	# Write the downloaded bytes to the local file
+	fh.seek(0)
+	with open(output_path, 'wb') as f:
+		shutil.copyfileobj(fh, f, length=131072)
+
+	print(f"Successfully downloaded '{output_path}'")
 
 
 def main():
@@ -296,9 +327,19 @@ def main():
 	global font_fixes
 	print(f'\n\nTotal font fixes: {font_fixes}')
 
-	missing_entries_report()
+	outdir = 'generated/'
+	outdir_pdfs = outdir + 'PDFs/'
+	os.makedirs(outdir_pdfs, exist_ok=True)
+
+	missing_entries_report(outdir)
 	if not missing_entries:
 		print('\nReports are complete and ready to go out to parents!!!')
+
+		for folder_id in ALL_DIRECTORIES:
+			docs = folder_get_docs(folder_id)
+			for doc in docs:
+				outfile = outdir_pdfs + doc["name"] + '.pdf'
+				export_google_doc_as_pdf(doc["id"], outfile)
 
 
 if __name__ == "__main__":
