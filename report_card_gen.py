@@ -16,7 +16,7 @@ SCOPES = ["https://www.googleapis.com/auth/documents"]
 
 # The ID of a sample document.
 #DOCUMENT_ID = "1K4yo7Jqpba9rkLb021mCWPqHD49buXG_KsWSAonlFsk"
-DOCUMENT_ID = "1N2Ix6JhuXWaGc2DqblQBM9Be5RL4OGml7t8xLzo-3ls"
+DOCUMENT_ID = "1FrCP4A0NT3k_6BqkPnrtqO_-jGpeXpXQj63zSHOqIkc"
 
 service = None
 
@@ -52,12 +52,9 @@ def open_doc(doc_id):
 		document = service.documents().get(documentId=DOCUMENT_ID).execute()
 		return document
 
-		#print(f"The title of the document is: {document.get('title')}")
-		# Further processing of document content (body elements) can be done here
-		# to extract paragraphs, tables, etc.
-
 	except HttpError as err:
 		print(err)
+		return None
 
 def get_text(doc):
 	content = doc.get('body').get('content')
@@ -72,12 +69,20 @@ def get_tables(document):
 	content = document.get('body').get('content')
 
 	all_tables = []
+	prev_elem = None
 	for element in content:
+	#for (i, element) in enumerate(content):
 		# Check if the structural element is a table
+
 		if element.get('table') is not None:
 			table = element.get('table')
+			#hdr_text = prev_elem.get('paragraph').get('elements').get('textRun').get('content')
+			hdr_text = prev_elem.get('paragraph').get('elements')[0].get('textRun').get('content')
+			teacher = hdr_text.replace('Teacher: ', '')
+			#print(f"table w hdr: {teacher}")
 			#print(table)
-			all_tables.append(table)
+			all_tables.append([teacher, table])
+		prev_elem = element
 	return all_tables
 
 def fix_text_font_style(start, end):
@@ -89,7 +94,7 @@ def fix_text_font_style(start, end):
 		'bold': False,
 		'italic': False,
 		'fontSize': {
-			'magnitude': 12,
+			'magnitude': 10,
 			'unit': "PT"
 		}
 	}
@@ -122,7 +127,7 @@ def fix_text_font_style(start, end):
 	except Exception as e:
 		print(f"An error occurred: {e}")
 
-def get_table_elements(table):
+def process_table_elements(teacher, table):
 	table_data = []
 	current_table_rows = []
 	#for row in table.get('tableRows'):
@@ -139,6 +144,10 @@ def get_table_elements(table):
 							text_run = run.get('textRun')
 							#print(text_run)
 							cell_text += text_run.get('content')
+							if r is 1 and c is 2 and not cell_text.strip():
+								#empty cell
+								print('empty cell in doc!')
+								print(f'great job, {teacher}!')
 							style = text_run.get('textStyle')
 							if style:
 								#print(style)
@@ -150,12 +159,13 @@ def get_table_elements(table):
 								#print(font_family)
 								#print(font_size_pt)
 
-								if not((font_family == 'Garamond') and (font_size_pt == 12)):
+								if not((font_family == 'Garamond') and (font_size_pt == 10)):
 									start = run.get("startIndex")
 									end = run.get("endIndex")
 									print(f'wee woo wee woo! text w wrong font in row {r}, col {c}')
 									print(f'run from {start} to {end}')
-									fix_text_font_style(start, end)
+									print(f'great job, {teacher}!')
+									#fix_text_font_style(start, end)
 			current_row_cells.append(cell_text.strip())
 		current_table_rows.append(current_row_cells)
 	table_data.append(current_table_rows)
@@ -166,15 +176,18 @@ def get_table_elements(table):
 
 def main():
 	doc = open_doc(DOCUMENT_ID)
+	if doc is None:
+		print("could not connect to internet")
+		exit()
 	print(f"The title of the document is: {doc.get('title')}")
 	#print(doc)
 
-	#tab_elems = get_table_elements(doc)
-	tables = get_tables(doc)
-	print(f"found {len(tables)} table(s)")
+	#tab_elems = process_table_elements(doc)
+	metatables = get_tables(doc)
+	print(f"found {len(metatables)} table(s)")
 
-	for t in tables:
-		get_table_elements(t)
+	for t in metatables:
+		process_table_elements(t[0],t[1])
 
 	#print(tab_elems)
 
