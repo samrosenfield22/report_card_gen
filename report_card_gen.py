@@ -1,4 +1,3 @@
-###pip install google-api-python-client google-auth-httplib2 google-auth-oauthlib openpyxl
 #Enable the APIs: In the Google Cloud Console, create a new project and enable the Google Docs API and Google Drive API.
 #Create Credentials: Set up an OAuth 2.0 client ID (selecting "Desktop app" is a common quickstart option) and download the credentials.json file to your project directory.
 #Install Libraries: Install the required Python packages:
@@ -300,7 +299,7 @@ def export_google_doc_as_pdf(file_id, output_path):
 	done = False
 	while done is False:
 		status, done = downloader.next_chunk()
-		print(f"Download progress: {int(status.progress() * 100)}%")
+		#print(f"Download progress: {int(status.progress() * 100)}%")
 
 	# Write the downloaded bytes to the local file
 	fh.seek(0)
