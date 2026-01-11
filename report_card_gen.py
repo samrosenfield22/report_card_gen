@@ -7,7 +7,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 
 app = None
-checkbox_settings = []
+checkbox_settings = {}
 CB_COUNT = 0
 
 def run_gui():
@@ -30,17 +30,10 @@ def run_gui():
 	label.pack(pady=30) # Use pack() to place the label in the window and add vertical padding
 
 
-
-	#global checkbox_settings
-	#checkbox_settings = [
-	#	ctk.BooleanVar(value=True),
-	#	ctk.BooleanVar(value=True),
-	#	ctk.BooleanVar(value=True)
-	#]
 	cb_y_pad = 10
-	checkbox("Fix fonts", cb_y_pad)
-	checkbox("Prepare missing writeup report", cb_y_pad)
-	checkbox("Generate PDFs", cb_y_pad)
+	checkbox("cb_fixfonts", "Fix fonts", cb_y_pad)
+	checkbox("cb_missing", "Prepare missing writeup report", cb_y_pad)
+	checkbox("cb_gen_pdfs", "Generate PDFs", cb_y_pad)
 
 	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
 	button.pack(padx=200, pady=30)
@@ -50,18 +43,20 @@ def run_gui():
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
 
-def checkbox(text, y):
+def checkbox(name, text, y):
 	global app
 	global checkbox_settings
 	global CB_COUNT
 
-	checkbox_settings.append(ctk.BooleanVar(value=True))
+	#checkbox_settings.append(ctk.BooleanVar(value=True))
+	checkbox_settings[name] = ctk.BooleanVar(value=True)
+
 
 	checkbox = ctk.CTkCheckBox(
 	    master=app,
 	    text=text,
 	    command=None,
-	    variable=checkbox_settings[CB_COUNT],
+	    variable=checkbox_settings[name],
 	    onvalue=True,
 	    offvalue=False
 	)
@@ -70,13 +65,14 @@ def checkbox(text, y):
 
 def process_report_card_buttons():
 	global checkbox_settings
-	reports_ready = process_all_report_cards(checkbox_settings[0].get(),
-		checkbox_settings[1].get(),
-		checkbox_settings[2].get())
+	reports_ready = process_all_report_cards(
+		checkbox_settings["cb_fixfonts"].get(),
+		checkbox_settings["cb_missing"].get(),
+		checkbox_settings["cb_gen_pdfs"].get())
 
 	#if we're trying to generate pdfs but we didn't
 	#check for missing entries, prompt user
-	if checkbox_settings[2].get():
+	if checkbox_settings["cb_gen_pdfs"].get():
 		doitanyway = True
 		if not reports_ready:
 			doitanyway = messagebox.askyesno('Are you sure?',
