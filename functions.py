@@ -110,16 +110,15 @@ def folder_get_docs(folder_id):
 
 	return items
 
-def process_doc(DOCUMENT_ID):
+def process_doc(DOCUMENT_ID, op_fix_fonts, op_missing_writup_report):
 	doc = open_doc(DOCUMENT_ID)
 	#print(f"The title of the document is: {current_doc_title}")
 
-	#tab_elems = process_table_elements(doc)
 	metatables = get_tables(doc)
 	#print(f"found {len(metatables)} table(s)")
 
 	for t in metatables:
-		process_table_elements(t[0],t[1])
+		process_table_elements(t[0],t[1], op_fix_fonts, op_missing_writup_report)
 
 def missing_entries_report(outdir):
 	global missing_entries
@@ -233,7 +232,9 @@ def fix_text_font_style(start, end):
 	except Exception as e:
 		print(f"An error occurred: {e}")
 
-def process_table_elements(teacher, table):
+def process_table_elements(teacher, table,
+	op_fix_fonts, op_missing_writup_report):
+
 	#global
 	global missing_entries
 	global current_doc_title
@@ -254,35 +255,37 @@ def process_table_elements(teacher, table):
 							text_run = run.get('textRun')
 							#print(text_run)
 							cell_text += text_run.get('content')
-							style = text_run.get('textStyle')
-							if style:
-								#print(style)
-								font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
-								font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
-								font_is_bold = style.get('bold', False)
-								font_is_italic = style.get('italic', False)
-
-								#print(f'bold = {font_is_bold}')
-								#font_size_pt = style.getFontSize()
-
-								#print("font info:")
-								#print(font_family)
-								#print(font_size_pt)
-
-								if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
+							if op_fix_fonts:
+								style = text_run.get('textStyle')
+								if style:
 									#print(style)
-									start = run.get("startIndex")
-									end = run.get("endIndex")
-									print(f'\t\tfixing text w wrong font... great job, {teacher}!')
-									#print(f'run from {start} to {end}')
-									fix_text_font_style(start, end)
-			#if the entire cell is empty, add to the list of missing teacher entries
-			#print(cell_text.strip())
-			if r is 1 and c is 2 and not cell_text.strip():
-				#empty cell
-				missing_entries.setdefault(teacher, [])
-				missing_entries[teacher].append([current_doc_title, current_doc_id])
-				#print(f'missing report card text! great job, {teacher}!')
+									font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
+									font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
+									font_is_bold = style.get('bold', False)
+									font_is_italic = style.get('italic', False)
+
+									#print(f'bold = {font_is_bold}')
+									#font_size_pt = style.getFontSize()
+
+									#print("font info:")
+									#print(font_family)
+									#print(font_size_pt)
+
+									if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
+										#print(style)
+										start = run.get("startIndex")
+										end = run.get("endIndex")
+										print(f'\t\tfixing text w wrong font... great job, {teacher}!')
+										#print(f'run from {start} to {end}')
+										fix_text_font_style(start, end)
+			if op_missing_writup_report:
+				#if the entire cell is empty, add to the list of missing teacher entries
+				#print(cell_text.strip())
+				if r is 1 and c is 2 and not cell_text.strip():
+					#empty cell
+					missing_entries.setdefault(teacher, [])
+					missing_entries[teacher].append([current_doc_title, current_doc_id])
+					#print(f'missing report card text! great job, {teacher}!')
 
 			current_row_cells.append(cell_text.strip())
 		current_table_rows.append(current_row_cells)
@@ -326,12 +329,13 @@ def process_report_cards(op_fix_fonts,
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
 			print(f'> reading doc {doc["name"]}')
-			process_doc(doc["id"])
+			process_doc(doc["id"], op_fix_fonts, op_missing_writup_report)
 	print('\nFinished processing all report cards')
 
 	# outputs
-	global font_fixes
-	print(f'\n\nTotal font fixes: {font_fixes}')
+	if op_fix_fonts:
+		global font_fixes
+		print(f'\n\nTotal font fixes: {font_fixes}')
 
 	global outdir
 	os.makedirs(outdir, exist_ok=True)
