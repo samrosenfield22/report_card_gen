@@ -1,6 +1,7 @@
 
-#import functions
+import functions
 from functions import *
+import time
 
 #gui
 import customtkinter as ctk
@@ -9,11 +10,14 @@ from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
 
 app = None
+msgbox = None
 checkbox_settings = {}
 CB_COUNT = 0
+msg_pending = ''
 
 def run_gui():
-	import customtkinter as ctk
+	window_w = 600
+	window_h = 500
 
 	#Set the appearance mode and default color theme
 	# Options: "Light", "Dark", "System" (default)
@@ -23,9 +27,12 @@ def run_gui():
 
 	#Create the main application window
 	global app
+	global msgbox
+
 	app = ctk.CTk()
 	app.title("Report card generator")
-	app.geometry("600x600") # Set the window size
+	geometry_str = str(window_w) + "x" + str(window_h) + "+450+100"
+	app.geometry(geometry_str) # Set the window size and location
 
 	#Add a label widget to the window
 	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 20))
@@ -43,10 +50,33 @@ def run_gui():
 	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
 	button.pack(padx=200, pady=30)
 
+	msgbox = ctk.CTkTextbox(app, width=window_w - 50, height=250)
+	msgbox.pack(padx=10, pady=10, anchor='s')
+
+	set_msg_callback()
+
+	app.after(10, update_textbox)
 
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
+
+def update_textbox():
+	global msgbox, msg_pending
+	#textbox.see("end")
+
+
+
+	#print('yeah!')
+	#msgbox.delete("1.0", "end")
+	msgbox.insert("end", msg_pending)
+	msgbox.see("end")
+	msg_pending = ''
+
+	app.update()
+
+	# Re-schedule the function to run again after 1000ms (1 second)
+	app.after(10, update_textbox)
 
 def checkbox(name, text, y, infotext):
 	global app
@@ -74,8 +104,27 @@ def checkbox(name, text, y, infotext):
 					 #follow=True
 	) # Optional: tooltip follows the mouse cursor (default is False)
 
+
+def msg(text):
+	global msgbox
+	text += '\n'
+	msgbox.insert("end", text)
+
+def message_cb_func(text):
+	global msg_pending
+
+	mystr = text + '\n'
+	msg_pending += mystr
+
+
+def set_msg_callback():
+	#global message
+	functions.message = message_cb_func
+	#return message_cb
+
 def process_report_card_buttons():
 	global checkbox_settings
+	msg('Scanning all report cards...')
 	reports_ready = process_all_report_cards(
 		checkbox_settings["cb_fixfonts"].get(),
 		checkbox_settings["cb_missing"].get())
@@ -94,13 +143,13 @@ def process_report_card_buttons():
 				message='Some report cards are missing writeups.\n(See the missing entries report in /generated for details)\nAre you sure you still want to generate PDFs?',
 				icon="question", option_1="No", option_2="Yes")
 			doitanyway = response.get()
-		print(f'doitanyway = {doitanyway}')
+		#print(f'doitanyway = {doitanyway}')
 		if doitanyway:
 			make_all_pdfs()
 
-	msg = CTkMessagebox(title="Info",
+	CTkMessagebox(title="Info",
 		message="Done!", icon="info", option_focus=1)
-
+	msg('Report PDFs saved to /generated/PDFs')
 
 def main():
 	run_gui()

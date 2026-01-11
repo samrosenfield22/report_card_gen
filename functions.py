@@ -48,6 +48,8 @@ font_fixes = 0
 expected_font_family = 'Garamond'
 expected_font_size = 10
 
+message = None
+
 def authenticate_google_services():
 	global drive_service, docs_service
 
@@ -278,7 +280,7 @@ def process_table_elements(teacher, table,
 			if op_missing_writeup_report:
 				#if the entire cell is empty, add to the list of missing teacher entries
 				#print(cell_text.strip())
-				if r is 1 and c is 2 and not cell_text.strip():
+				if r==1 and c==2 and not cell_text.strip():
 					#empty cell
 					missing_entries.setdefault(teacher, [])
 					missing_entries[teacher].append([current_doc_title, current_doc_id])
@@ -317,6 +319,8 @@ def export_google_doc_as_pdf(file_id, output_path):
 
 def process_all_report_cards(op_fix_fonts,
 	op_missing_writeup_report):
+
+	
 
 	reports_ready = False
 	print('\n\n\n')
