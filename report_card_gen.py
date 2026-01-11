@@ -69,7 +69,7 @@ def checkbox(text, y):
 
 def process_report_card_buttons():
 	global checkbox_settings
-	process_report_cards(checkbox_settings[0].get(),
+	process_all_report_cards(checkbox_settings[0].get(),
 		checkbox_settings[1].get(),
 		checkbox_settings[2].get())
 

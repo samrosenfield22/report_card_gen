@@ -110,7 +110,7 @@ def folder_get_docs(folder_id):
 
 	return items
 
-def process_doc(DOCUMENT_ID, op_fix_fonts, op_missing_writup_report):
+def process_doc(DOCUMENT_ID, op_fix_fonts, op_missing_writeup_report):
 	doc = open_doc(DOCUMENT_ID)
 	#print(f"The title of the document is: {current_doc_title}")
 
@@ -118,7 +118,7 @@ def process_doc(DOCUMENT_ID, op_fix_fonts, op_missing_writup_report):
 	#print(f"found {len(metatables)} table(s)")
 
 	for t in metatables:
-		process_table_elements(t[0],t[1], op_fix_fonts, op_missing_writup_report)
+		process_table_elements(t[0],t[1], op_fix_fonts, op_missing_writeup_report)
 
 def missing_entries_report(outdir):
 	global missing_entries
@@ -188,7 +188,24 @@ def get_tables(document):
 		prev_elem = element
 	return all_tables
 
-def fix_text_font_style(start, end):
+def fix_font(run):
+	text_run = run.get('textRun')
+	style = text_run.get('textStyle')
+	if style:
+		#print(style)
+		font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
+		font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
+		font_is_bold = style.get('bold', False)
+		font_is_italic = style.get('italic', False)
+
+		if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
+			#print(style)
+			start = run.get("startIndex")
+			end = run.get("endIndex")
+			#print(f'run from {start} to {end}')
+			send_font_fix_request(start, end)
+
+def send_font_fix_request(start, end):
 	global font_fixes
 
 	new_text_style = {
@@ -233,7 +250,7 @@ def fix_text_font_style(start, end):
 		print(f"An error occurred: {e}")
 
 def process_table_elements(teacher, table,
-	op_fix_fonts, op_missing_writup_report):
+	op_fix_fonts, op_missing_writeup_report):
 
 	#global
 	global missing_entries
@@ -252,33 +269,13 @@ def process_table_elements(teacher, table,
 				if 'paragraph' in cell_content:
 					for run in cell_content.get('paragraph').get('elements'):
 						if 'textRun' in run:
-							text_run = run.get('textRun')
-							#print(text_run)
-							cell_text += text_run.get('content')
 							if op_fix_fonts:
-								style = text_run.get('textStyle')
-								if style:
-									#print(style)
-									font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
-									font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
-									font_is_bold = style.get('bold', False)
-									font_is_italic = style.get('italic', False)
+								fix_font(run)
 
-									#print(f'bold = {font_is_bold}')
-									#font_size_pt = style.getFontSize()
+							text_run = run.get('textRun')
+							cell_text += text_run.get('content')
 
-									#print("font info:")
-									#print(font_family)
-									#print(font_size_pt)
-
-									if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
-										#print(style)
-										start = run.get("startIndex")
-										end = run.get("endIndex")
-										print(f'\t\tfixing text w wrong font... great job, {teacher}!')
-										#print(f'run from {start} to {end}')
-										fix_text_font_style(start, end)
-			if op_missing_writup_report:
+			if op_missing_writeup_report:
 				#if the entire cell is empty, add to the list of missing teacher entries
 				#print(cell_text.strip())
 				if r is 1 and c is 2 and not cell_text.strip():
@@ -318,9 +315,8 @@ def export_google_doc_as_pdf(file_id, output_path):
 	print(f"Successfully downloaded '{output_path}'")
 
 
-def process_report_cards(op_fix_fonts,
-	op_missing_writup_report, op_generate_pdfs):
-	#def process_report_cards():
+def process_all_report_cards(op_fix_fonts,
+	op_missing_writeup_report, op_generate_pdfs):
 	print('\n\n\n')
 
 	authenticate_google_services()
@@ -329,7 +325,7 @@ def process_report_cards(op_fix_fonts,
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
 			print(f'> reading doc {doc["name"]}')
-			process_doc(doc["id"], op_fix_fonts, op_missing_writup_report)
+			process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
 	print('\nFinished processing all report cards')
 
 	# outputs
@@ -337,14 +333,17 @@ def process_report_cards(op_fix_fonts,
 		global font_fixes
 		print(f'\n\nTotal font fixes: {font_fixes}')
 
-	global outdir
-	os.makedirs(outdir, exist_ok=True)
 
-	missing_entries_report(outdir)
-	if not missing_entries:
-		print('\nReports are complete and ready to go out to parents!!!')
-		if op_generate_pdfs:
-			make_all_pdfs()
+
+	if op_missing_writeup_report:
+		global outdir
+		os.makedirs(outdir, exist_ok=True)
+		missing_entries_report(outdir)
+		if not missing_entries:
+			print('\nReports are complete and ready to go out to parents!!!')
+
+	if op_generate_pdfs:
+		make_all_pdfs()
 
 def make_all_pdfs():
 	global outdir_pdfs
