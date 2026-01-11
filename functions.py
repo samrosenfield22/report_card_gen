@@ -76,10 +76,10 @@ def authenticate_google_services():
 		#service = build("docs", "v1", credentials=creds)
 		drive_service = build("drive", "v3", credentials=creds)
 		docs_service = build("docs", "v1", credentials=creds)
-
+		return True
 	except HttpError as err:
 		print(err)
-		#return None
+		return False
 
 def get_all_folder_names():
 	global ALL_DIRECTORIES
@@ -164,11 +164,16 @@ def missing_entries_report(outdir):
 	print('*' * 40)
 	ws.append(['Teacher', 'Missing reports', 'Link'])
 	for teacher,missings in missing_entries.items():
-		print(f'{teacher} is missing writeups in {len(missings)} reports:')
+		teach_msg = f'{teacher} is missing writeups in {len(missings)} reports:'
+		#print(f'{teacher} is missing writeups in {len(missings)} reports:')
+		print(teach_msg)
+		message(teach_msg)
 		ws.append([teacher])
 		for rep_name,rep_id in missings:
 			url = f"https://docs.google.com/document/d/{rep_id}/edit"
-			print(f'\t{rep_name} ({url})')
+			missing_msg = f'\t{rep_name}'
+			print(missing_msg)
+			message(missing_msg)
 			ws.append(['', rep_name, url])
 
 	bold_font = Font(bold=True)
@@ -374,7 +379,10 @@ def process_all_report_cards(op_fix_fonts,
 	# outputs
 	if op_fix_fonts:
 		global font_fixes
-		print(f'\n\nTotal font fixes: {font_fixes}')
+		fontfix_str = f'\nTotal font fixes: {font_fixes}'
+		print(fontfix_str)
+		message(fontfix_str)
+
 
 
 	if op_missing_writeup_report:
@@ -387,7 +395,7 @@ def process_all_report_cards(op_fix_fonts,
 
 	#reports_ready = not missing_entries
 	#print(f'missing_entries: {missing_entries}')
-	print(f'reports_ready = {reports_ready}')
+	#print(f'reports_ready = {reports_ready}')
 	return reports_ready
 
 	#if op_generate_pdfs:

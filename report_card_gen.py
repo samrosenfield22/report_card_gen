@@ -1,8 +1,9 @@
 
 import functions
 from functions import *
-import time
+#import time
 import subprocess
+import socket
 
 #gui
 import customtkinter as ctk
@@ -75,13 +76,19 @@ def run_gui():
 	cb_emailfams.configure(state="disabled")
 
 	global button
-	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
+	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_button)
 	button.pack(padx=200, pady=30)
 
 	msgbox = ctk.CTkTextbox(app, width=window_w - 50, height=250)
 	msgbox.pack(padx=10, pady=10, anchor='s')
 
 	set_msg_callback()
+
+	if not is_connected():
+		response = CTkMessagebox(title="Failed to connect",
+			message="Unable to connect to internet!", icon="warning", option_focus=1)
+		response.get()
+		quit()
 
 	authenticate_google_services()
 
@@ -93,6 +100,16 @@ def run_gui():
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
 
+
+def is_connected():
+	try:
+		# Connect to a public DNS server (1.1.1.1) on port 53 (DNS port)
+		# using a short timeout to prevent hanging.
+		socket.create_connection(("1.1.1.1", 53), timeout=3)
+		return True
+	except OSError:
+		# If the connection fails, an OSError is raised.
+		return False
 
 def open_notepad_dir_ids():
 	notepad_path = r"C:\Windows\System32\notepad.exe"
@@ -188,8 +205,9 @@ def set_msg_callback():
 	functions.message = message_cb_func
 	#return message_cb
 
-def process_report_card_buttons():
+def process_report_card_button():
 	global checkbox_settings
+	msgbox_clear()
 	msg('Scanning all report cards...')
 	reports_ready = process_all_report_cards(
 		checkbox_settings["cb_fixfonts"].get(),
