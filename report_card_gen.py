@@ -2,6 +2,7 @@
 import functions
 from functions import *
 import time
+import subprocess
 
 #gui
 import customtkinter as ctk
@@ -40,10 +41,15 @@ def run_gui():
 	# Add a "File" button and a dropdown menu
 	file_button = menubar.add_cascade("File")
 	file_dropdown = CustomDropdownMenu(widget=file_button)
-	file_dropdown.add_option(option="New File", command=lambda: print("New File"))
-	file_dropdown.add_option(option="Open File", command=lambda: print("Open File"))
+	file_dropdown.add_option(option="Set google drive folder IDs...", command=lambda: open_notepad_dir_ids())
+	#file_dropdown.add_option(option="Open File", command=lambda: print("Open File"))
 	file_dropdown.add_separator()
 	file_dropdown.add_option(option="Exit", command=app.quit)
+
+	file_button = menubar.add_cascade("Help")
+	file_dropdown = CustomDropdownMenu(widget=file_button)
+	file_dropdown.add_option(option="About rcg", command=lambda: print("mr sam is the coolest on the planet"))
+
 
 	#Add a label widget to the window
 	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 20))
@@ -80,6 +86,11 @@ def run_gui():
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
+
+def open_notepad_dir_ids():
+	notepad_path = r"C:\Windows\System32\notepad.exe"
+	subprocess.Popen([notepad_path, 'directory_ids'])
+	
 
 def update_textbox():
 	global msgbox, msg_pending

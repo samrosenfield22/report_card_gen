@@ -29,8 +29,8 @@ SCOPES = [
 ]
 #SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
-
+#ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
+ALL_DIRECTORIES = []
 
 drive_service = None
 docs_service = None
@@ -316,14 +316,22 @@ def export_google_doc_as_pdf(file_id, output_path):
 
 	print(f"Successfully downloaded '{output_path}'")
 
+def load_directory_ids():
+	with open("directory_ids.txt", "r") as file:
+		content = file.read()
+	global ALL_DIRECTORIES
+	ALL_DIRECTORIES = content.split('\n')
+	print(f'using {len(ALL_DIRECTORIES)} directories')
+	#for each_id in dirids:
+	#	print(f'dirid: {each_id}')
 
 def process_all_report_cards(op_fix_fonts,
 	op_missing_writeup_report):
 
-	
-
 	reports_ready = False
 	print('\n\n\n')
+
+	load_directory_ids()
 
 	authenticate_google_services()
 
