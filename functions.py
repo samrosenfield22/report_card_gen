@@ -317,6 +317,8 @@ def export_google_doc_as_pdf(file_id, output_path):
 
 def process_all_report_cards(op_fix_fonts,
 	op_missing_writeup_report, op_generate_pdfs):
+
+	reports_ready = False
 	print('\n\n\n')
 
 	authenticate_google_services()
@@ -334,16 +336,21 @@ def process_all_report_cards(op_fix_fonts,
 		print(f'\n\nTotal font fixes: {font_fixes}')
 
 
-
 	if op_missing_writeup_report:
 		global outdir
 		os.makedirs(outdir, exist_ok=True)
 		missing_entries_report(outdir)
 		if not missing_entries:
 			print('\nReports are complete and ready to go out to parents!!!')
+			reports_ready = True
 
-	if op_generate_pdfs:
-		make_all_pdfs()
+	#reports_ready = not missing_entries
+	#print(f'missing_entries: {missing_entries}')
+	print(f'reports_ready = {reports_ready}')
+	return reports_ready
+
+	#if op_generate_pdfs:
+	#	make_all_pdfs()
 
 def make_all_pdfs():
 	global outdir_pdfs

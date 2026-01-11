@@ -4,6 +4,7 @@ from functions import *
 
 #gui
 import customtkinter as ctk
+from tkinter import messagebox
 
 app = None
 checkbox_settings = []
@@ -69,9 +70,20 @@ def checkbox(text, y):
 
 def process_report_card_buttons():
 	global checkbox_settings
-	process_all_report_cards(checkbox_settings[0].get(),
+	reports_ready = process_all_report_cards(checkbox_settings[0].get(),
 		checkbox_settings[1].get(),
 		checkbox_settings[2].get())
+
+	#if we're trying to generate pdfs but we didn't
+	#check for missing entries, prompt user
+	if checkbox_settings[2].get():
+		doitanyway = True
+		if not reports_ready:
+			doitanyway = messagebox.askyesno('Are you sure?',
+			'Report cards may be missing writeups.\nAre you sure you still want to generate PDFs?')
+		print(f'doitanyway = {doitanyway}')
+		if doitanyway:
+			make_all_pdfs()
 
 	#for i, cb in enumerate(checkbox_settings):
 	#	print(f'check box {i} set to {checkbox_settings[i].get()}')
