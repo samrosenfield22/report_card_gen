@@ -6,7 +6,8 @@ from functions import *
 import customtkinter as ctk
 
 app = None
-checkbox_settings = None
+checkbox_settings = []
+CB_COUNT = 0
 
 def run_gui():
 	import customtkinter as ctk
@@ -27,36 +28,44 @@ def run_gui():
 	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 20))
 	label.pack(pady=30) # Use pack() to place the label in the window and add vertical padding
 
-	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
-	button.pack(padx=200, pady=40)
 
-	global checkbox_settings
-	checkbox_settings = [
-		ctk.BooleanVar(value=True),
-		ctk.BooleanVar(value=True)
-	]
-	checkbox("enable feature x", 150, checkbox_settings[0])
-	checkbox("enable feature y", 180, checkbox_settings[1])
+
+	#global checkbox_settings
+	#checkbox_settings = [
+	#	ctk.BooleanVar(value=True),
+	#	ctk.BooleanVar(value=True),
+	#	ctk.BooleanVar(value=True)
+	#]
+	cb_y_pad = 10
+	checkbox("Fix fonts", cb_y_pad)
+	checkbox("Prepare missing writeup report", cb_y_pad)
+	checkbox("Generate PDFs", cb_y_pad)
+
+	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
+	button.pack(padx=200, pady=30)
 
 
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
 
-def checkbox(text, y, var):
+def checkbox(text, y):
 	global app
-	# Variable to track state (on/off)
-	#var = ctk.StringVar(value="on") # Default value
+	global checkbox_settings
+	global CB_COUNT
+
+	checkbox_settings.append(ctk.BooleanVar(value=True))
 
 	checkbox = ctk.CTkCheckBox(
 	    master=app,
 	    text=text,
 	    command=None,
-	    variable=var,
-	    onvalue=True,  # Value when checked
-	    offvalue=False # Value when unchecked
+	    variable=checkbox_settings[CB_COUNT],
+	    onvalue=True,
+	    offvalue=False
 	)
-	checkbox.pack(padx=20, pady=y)
+	checkbox.pack(padx=100, pady=y, anchor='w')
+	CB_COUNT+=1
 
 def process_report_card_buttons():
 	#process_report_cards()
