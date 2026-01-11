@@ -316,7 +316,7 @@ def export_google_doc_as_pdf(file_id, output_path):
 
 
 def process_all_report_cards(op_fix_fonts,
-	op_missing_writeup_report, op_generate_pdfs):
+	op_missing_writeup_report):
 
 	reports_ready = False
 	print('\n\n\n')
