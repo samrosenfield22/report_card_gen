@@ -36,6 +36,8 @@ def run_gui():
 		ctk.BooleanVar(value=True)
 	]
 	checkbox("enable feature x", 150, checkbox_settings[0])
+	checkbox("enable feature y", 180, checkbox_settings[1])
+
 
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
@@ -58,7 +60,9 @@ def checkbox(text, y, var):
 
 def process_report_card_buttons():
 	#process_report_cards()
-	print(f'check box set to {checkbox_settings[0].get()}')
+	global checkbox_settings
+	for i, cb in enumerate(checkbox_settings):
+		print(f'check box {i} set to {checkbox_settings[i].get()}')
 
 def main():
 	run_gui()
