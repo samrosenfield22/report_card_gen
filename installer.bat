@@ -1,5 +1,6 @@
 @ECHO OFF
-pyinstaller --clean --distpath . --onefile --windowed report_card_gen.py
+set PROG=report_card_gen
+pyinstaller --clean --distpath . --onefile --windowed %PROG%.py
 
-DEL report_card_gen.spec
+DEL %PROG%.spec
 RD /S /Q "build"
