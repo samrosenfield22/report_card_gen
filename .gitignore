@@ -1,3 +1,6 @@
 missing entries report.xlsx
 generated/*
 __pycache__/*
+build/*
+dist/*
+*.spec

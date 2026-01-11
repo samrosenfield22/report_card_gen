@@ -237,7 +237,7 @@ def process_report_card_button():
 
 def main():
 	run_gui()
-	exit()
+	quit()
 
 if __name__ == "__main__":
 	main()
