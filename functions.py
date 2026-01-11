@@ -349,13 +349,16 @@ def export_google_doc_as_pdf(file_id, output_path):
 	print(f"Successfully downloaded '{output_path}'")
 
 def load_directory_ids():
-	with open("directory_ids.txt", "r") as file:
-		content = file.read()
-	global ALL_DIRECTORIES
-	ALL_DIRECTORIES = content.split('\n')
-	#print(f'using {len(ALL_DIRECTORIES)} directories')
-	#for each_id in dirids:
-	#	print(f'dirid: {each_id}')
+	try:
+		with open("directory_ids.txt", "r") as file:
+			content = file.read()
+		global ALL_DIRECTORIES
+		ALL_DIRECTORIES = content.split('\n')
+		#print(f'using {len(ALL_DIRECTORIES)} directories')
+		#for each_id in dirids:
+		#	print(f'dirid: {each_id}')
+	except FileNotFoundError:
+		open('directory_ids.txt', 'w+')
 
 def process_all_report_cards(op_fix_fonts,
 	op_missing_writeup_report):

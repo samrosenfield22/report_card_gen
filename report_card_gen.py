@@ -4,6 +4,7 @@ from functions import *
 #import time
 import subprocess
 import socket
+import sys
 
 #gui
 import customtkinter as ctk
@@ -88,7 +89,7 @@ def run_gui():
 		response = CTkMessagebox(title="Failed to connect",
 			message="Unable to connect to internet!", icon="warning", option_focus=1)
 		response.get()
-		quit()
+		sys.exit()
 
 	authenticate_google_services()
 
@@ -237,7 +238,7 @@ def process_report_card_button():
 
 def main():
 	run_gui()
-	quit()
+	sys.exit()
 
 if __name__ == "__main__":
 	main()
