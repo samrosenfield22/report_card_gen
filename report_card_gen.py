@@ -40,12 +40,21 @@ def run_gui():
 
 
 	cb_y_pad = 10
-	checkbox("cb_fixfonts", "Fix fonts", cb_y_pad,
+	cb_x_indent = 20
+	checkbox("cb_fixfonts", "Fix fonts", 0, cb_y_pad,
 		'Fix fonts and font sizes in all grades boxes')
-	checkbox("cb_missing", "Prepare missing writeup report", cb_y_pad,
+	checkbox("cb_missing", "Prepare missing writeup report", 0, cb_y_pad,
 		'Find all grade boxes with missing \'Notes\' sections, generate a report')
-	checkbox("cb_gen_pdfs", "Generate PDFs", cb_y_pad,
+	cb_emailtch = checkbox("cb_emailtch", "Email teachers with missing reports",
+	cb_x_indent, cb_y_pad,
+		'Email all teachers which reports are missing')
+	cb_emailtch.configure(state="disabled")
+	checkbox("cb_gen_pdfs", "Generate PDFs", 0, cb_y_pad,
 		'Generate PDFs of all report cards')
+	cb_emailfams = checkbox("cb_emailfams", "Email report cards to families",
+	0, cb_y_pad,
+		'Email report cards to families')
+	cb_emailfams.configure(state="disabled")
 
 	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
 	button.pack(padx=200, pady=30)
@@ -78,7 +87,7 @@ def update_textbox():
 	# Re-schedule the function to run again after 1000ms (1 second)
 	app.after(10, update_textbox)
 
-def checkbox(name, text, y, infotext):
+def checkbox(name, text, x, y, infotext):
 	global app
 	global checkbox_settings
 	global CB_COUNT
@@ -95,7 +104,7 @@ def checkbox(name, text, y, infotext):
 		onvalue=True,
 		offvalue=False
 	)
-	checkbox.pack(padx=100, pady=y, anchor='w')
+	checkbox.pack(padx=x+100, pady=y, anchor='w')
 	CB_COUNT+=1
 
 	#CustomTooltipLabel(anchor=checkbox, text="This is the information you asked for!", delay=0.5)
@@ -104,10 +113,12 @@ def checkbox(name, text, y, infotext):
 					 #follow=True
 	) # Optional: tooltip follows the mouse cursor (default is False)
 
+	return checkbox
 
 def msg(text):
 	global msgbox
 	text += '\n'
+	msgbox.configure(state="normal")
 	msgbox.insert("end", text)
 
 def message_cb_func(text):
