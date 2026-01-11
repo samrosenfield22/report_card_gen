@@ -6,6 +6,7 @@ import time
 #gui
 import customtkinter as ctk
 #from tkinter import messagebox
+from CTkMenuBar import *
 from CTkMessagebox import CTkMessagebox
 from CTkToolTip import CTkToolTip
 
@@ -33,6 +34,16 @@ def run_gui():
 	app.title("Report card generator")
 	geometry_str = str(window_w) + "x" + str(window_h) + "+450+100"
 	app.geometry(geometry_str) # Set the window size and location
+
+	menubar = CTkMenuBar(app)
+
+	# Add a "File" button and a dropdown menu
+	file_button = menubar.add_cascade("File")
+	file_dropdown = CustomDropdownMenu(widget=file_button)
+	file_dropdown.add_option(option="New File", command=lambda: print("New File"))
+	file_dropdown.add_option(option="Open File", command=lambda: print("Open File"))
+	file_dropdown.add_separator()
+	file_dropdown.add_option(option="Exit", command=app.quit)
 
 	#Add a label widget to the window
 	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 20))
