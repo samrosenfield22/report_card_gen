@@ -13,6 +13,7 @@ from CTkToolTip import CTkToolTip
 
 app = None
 msgbox = None
+button = None
 checkbox_settings = {}
 CB_COUNT = 0
 msg_pending = ''
@@ -33,7 +34,7 @@ def run_gui():
 
 	app = ctk.CTk()
 	app.title("Report card generator")
-	geometry_str = str(window_w) + "x" + str(window_h) + "+450+100"
+	geometry_str = str(window_w) + "x" + str(window_h) + "+450+50"
 	app.geometry(geometry_str) # Set the window size and location
 
 	menubar = CTkMenuBar(app)
@@ -52,7 +53,7 @@ def run_gui():
 
 
 	#Add a label widget to the window
-	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 10))
+	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 15))
 	label.pack(pady=20) # Use pack() to place the label in the window and add vertical padding
 
 
@@ -73,6 +74,7 @@ def run_gui():
 		'Email report cards to families')
 	cb_emailfams.configure(state="disabled")
 
+	global button
 	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_buttons)
 	button.pack(padx=200, pady=30)
 
@@ -83,12 +85,7 @@ def run_gui():
 
 	authenticate_google_services()
 
-	load_directory_ids()
-	folder_names = get_all_folder_names()
-	msg('Using google drive folders:')
-	for fname in folder_names:
-		msg(fname)
-	msg('\nIf these are not the correct folders, Go to file > Set google drive folder ids to add the current folders')
+	check_current_drive_folders()
 
 	app.after(10, update_textbox)
 
@@ -96,10 +93,37 @@ def run_gui():
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
 
+
 def open_notepad_dir_ids():
 	notepad_path = r"C:\Windows\System32\notepad.exe"
-	subprocess.Popen([notepad_path, 'directory_ids'])
+	process = subprocess.Popen([notepad_path, 'directory_ids'])
+	process.wait()
+	print('closed notepad')
+	check_current_drive_folders()
 
+def check_current_drive_folders():
+	folders_set = False
+
+	load_directory_ids()
+	folder_names = get_all_folder_names()
+	msgbox_clear()
+	if not folder_names:
+		msg('No folders added.\nGet each folder ID by opening it in Google Drive, then copy the long string of characters after\nhttps://drive.google.com/drive/u/0/folders/\nThen go to File > Set google drive folder IDs to add those folder IDs\n')
+	else:
+		folders_set = True
+		msg('Using google drive folders:')
+		for fname in folder_names:
+			msg(fname)
+			msg('\nIf these are not the correct folders, Go to File > Set google drive folder IDs to add\nthe current folders')
+
+	global button
+	if folders_set:
+		button.configure(state="normal")
+	else:
+		button.configure(state="disabled")
+
+def msgbox_clear():
+	msgbox.delete("1.0", "end")
 
 def update_textbox():
 	global msgbox, msg_pending
@@ -182,7 +206,7 @@ def process_report_card_buttons():
 			doitanyway = response.get()
 		elif not reports_ready:
 			response = CTkMessagebox(title="Are you sure?",
-				message='Some report cards are missing writeups.\n(See the missing entries report in /generated for details)\nAre you sure you still want to generate PDFs?',
+				message='Some report cards are missing writeups.\n(See generated/missing entries report.xlsx for details)\nAre you sure you still want to generate PDFs?',
 				icon="question", option_1="No", option_2="Yes")
 			doitanyway = response.get()
 		#print(f'doitanyway = {doitanyway}')

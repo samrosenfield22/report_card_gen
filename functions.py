@@ -85,8 +85,10 @@ def get_all_folder_names():
 	global ALL_DIRECTORIES
 	folder_names = []
 	for folder_id in ALL_DIRECTORIES:
-		name = folder_get_name(folder_id)
-		folder_names.append(name)
+		if folder_id:
+			name = folder_get_name(folder_id)
+			folder_names.append(name)
+	#print(folder_names)
 	return folder_names
 
 def folder_get_name(folder_id):
@@ -346,7 +348,7 @@ def load_directory_ids():
 		content = file.read()
 	global ALL_DIRECTORIES
 	ALL_DIRECTORIES = content.split('\n')
-	print(f'using {len(ALL_DIRECTORIES)} directories')
+	#print(f'using {len(ALL_DIRECTORIES)} directories')
 	#for each_id in dirids:
 	#	print(f'dirid: {each_id}')
 
@@ -363,7 +365,7 @@ def process_all_report_cards(op_fix_fonts,
 	for folder_id in ALL_DIRECTORIES:
 		#print(f'searching folder: {folder_get_name(folder_id)}')
 		docs = folder_get_docs(folder_id)
-		print(f'folder name: {docs[0]['name']}')
+		#print(f'folder name: {docs[0]['name']}')
 		for doc in docs:
 			print(f'> reading doc {doc["name"]}')
 			process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
