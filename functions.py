@@ -315,8 +315,11 @@ def export_google_doc_as_pdf(file_id, output_path):
 	print(f"Successfully downloaded '{output_path}'")
 
 
-def process_report_cards():
+def process_report_cards(op_fix_fonts,
+	op_missing_writup_report, op_generate_pdfs):
+	#def process_report_cards():
 	print('\n\n\n')
+
 	authenticate_google_services()
 
 	for folder_id in ALL_DIRECTORIES:
@@ -330,16 +333,18 @@ def process_report_cards():
 	global font_fixes
 	print(f'\n\nTotal font fixes: {font_fixes}')
 
-	global outdir, outdir_pdfs
-	os.makedirs(outdir_pdfs, exist_ok=True)
+	global outdir
+	os.makedirs(outdir, exist_ok=True)
 
 	missing_entries_report(outdir)
 	if not missing_entries:
 		print('\nReports are complete and ready to go out to parents!!!')
-		make_all_pdfs()
+		if op_generate_pdfs:
+			make_all_pdfs()
 
 def make_all_pdfs():
 	global outdir_pdfs
+	os.makedirs(outdir_pdfs, exist_ok=True)
 	for folder_id in ALL_DIRECTORIES:
 		docs = folder_get_docs(folder_id)
 		for doc in docs:

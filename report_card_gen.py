@@ -68,10 +68,13 @@ def checkbox(text, y):
 	CB_COUNT+=1
 
 def process_report_card_buttons():
-	#process_report_cards()
 	global checkbox_settings
-	for i, cb in enumerate(checkbox_settings):
-		print(f'check box {i} set to {checkbox_settings[i].get()}')
+	process_report_cards(checkbox_settings[0].get(),
+		checkbox_settings[1].get(),
+		checkbox_settings[2].get())
+
+	#for i, cb in enumerate(checkbox_settings):
+	#	print(f'check box {i} set to {checkbox_settings[i].get()}')
 
 def main():
 	run_gui()
