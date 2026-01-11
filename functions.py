@@ -81,10 +81,35 @@ def authenticate_google_services():
 		print(err)
 		#return None
 
+def get_all_folder_names():
+	global ALL_DIRECTORIES
+	folder_names = []
+	for folder_id in ALL_DIRECTORIES:
+		name = folder_get_name(folder_id)
+		folder_names.append(name)
+	return folder_names
+
+def folder_get_name(folder_id):
+	global drive_service
+	page_token = None
+	try:
+		file_metadata = drive_service.files().get(
+			fileId=folder_id,
+			fields='name, mimeType' # Request only the 'name' and 'mimeType' fields to be efficient
+		).execute()
+
+		if file_metadata['mimeType'] == 'application/vnd.google-apps.folder':
+			return file_metadata['name']
+		else:
+			return None
+
+	except HttpError as error:
+		print(f'An error occurred: {error}')
+		return None
+
+	return items
+
 def folder_get_docs(folder_id):
-	"""
-	Lists all files in a specific Google Drive folder ID.
-	"""
 	global drive_service
 	items = []
 	page_token = None
@@ -197,10 +222,10 @@ def fix_font(run):
 		#print(style)
 		font_family = style.get('weightedFontFamily', {}).get('fontFamily', 'N/A')
 		font_size_pt = style.get('fontSize', {}).get('magnitude', 'N/A')
-		font_is_bold = style.get('bold', False)
-		font_is_italic = style.get('italic', False)
+		#font_is_bold = style.get('bold', False)
+		#font_is_italic = style.get('italic', False)
 
-		if not((font_family == expected_font_family) and (font_size_pt == expected_font_size) and (font_is_bold==False) and (font_is_italic==False)):
+		if not((font_family == expected_font_family) and (font_size_pt == expected_font_size)):
 			#print(style)
 			start = run.get("startIndex")
 			end = run.get("endIndex")
@@ -214,8 +239,8 @@ def send_font_fix_request(start, end):
 		'weightedFontFamily': {
 			'fontFamily': expected_font_family
 		},
-		'bold': False,
-		'italic': False,
+		#'bold': False,
+		#'italic': False,
 		'fontSize': {
 			'magnitude': expected_font_size,
 			'unit': "PT"
@@ -235,7 +260,7 @@ def send_font_fix_request(start, end):
 			'updateTextStyle': {
 				'range': text_range,
 				'textStyle': new_text_style,
-				'fields': 'weightedFontFamily,fontSize,bold,italic' # Specify the fields to update
+				'fields': 'weightedFontFamily,fontSize' # Specify the fields to update
 			}
 		}
 	]
@@ -333,10 +358,12 @@ def process_all_report_cards(op_fix_fonts,
 
 	load_directory_ids()
 
-	authenticate_google_services()
+	#authenticate_google_services()
 
 	for folder_id in ALL_DIRECTORIES:
+		#print(f'searching folder: {folder_get_name(folder_id)}')
 		docs = folder_get_docs(folder_id)
+		print(f'folder name: {docs[0]['name']}')
 		for doc in docs:
 			print(f'> reading doc {doc["name"]}')
 			process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)

@@ -19,7 +19,7 @@ msg_pending = ''
 
 def run_gui():
 	window_w = 600
-	window_h = 500
+	window_h = 600
 
 	#Set the appearance mode and default color theme
 	# Options: "Light", "Dark", "System" (default)
@@ -52,8 +52,8 @@ def run_gui():
 
 
 	#Add a label widget to the window
-	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 20))
-	label.pack(pady=30) # Use pack() to place the label in the window and add vertical padding
+	label = ctk.CTkLabel(app, text="Report card generator", font=("Helvetica", 10))
+	label.pack(pady=20) # Use pack() to place the label in the window and add vertical padding
 
 
 	cb_y_pad = 10
@@ -81,6 +81,15 @@ def run_gui():
 
 	set_msg_callback()
 
+	authenticate_google_services()
+
+	load_directory_ids()
+	folder_names = get_all_folder_names()
+	msg('Using google drive folders:')
+	for fname in folder_names:
+		msg(fname)
+	msg('\nIf these are not the correct folders, Go to file > Set google drive folder ids to add the current folders')
+
 	app.after(10, update_textbox)
 
 	#Start the application loop
@@ -90,7 +99,7 @@ def run_gui():
 def open_notepad_dir_ids():
 	notepad_path = r"C:\Windows\System32\notepad.exe"
 	subprocess.Popen([notepad_path, 'directory_ids'])
-	
+
 
 def update_textbox():
 	global msgbox, msg_pending
