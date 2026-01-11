@@ -3,6 +3,7 @@ import functions
 from functions import *
 #import time
 import subprocess
+import stat
 import socket
 import sys
 
@@ -51,7 +52,8 @@ def run_gui():
 
 	file_button = menubar.add_cascade("Help")
 	file_dropdown = CustomDropdownMenu(widget=file_button)
-	file_dropdown.add_option(option="About rcg", command=lambda: print("mr sam is the coolest on the planet"))
+	file_dropdown.add_option(option="How to use", command=lambda: display_readme())
+	file_dropdown.add_option(option="About this program", command=lambda: display_about())
 
 
 	#Add a label widget to the window
@@ -116,8 +118,28 @@ def open_notepad_dir_ids():
 	notepad_path = r"C:\Windows\System32\notepad.exe"
 	process = subprocess.Popen([notepad_path, 'directory_ids'])
 	process.wait()
-	print('closed notepad')
 	check_current_drive_folders()
+
+def display_readme():
+	notepad_path = r"C:\Windows\System32\notepad.exe"
+	readme_path = 'docs/readme.txt'
+	os.chmod(readme_path, stat.S_IREAD)
+	process = subprocess.Popen([notepad_path, readme_path])
+	process.wait()
+	return
+
+	readme_msg = """
+	
+	"""
+	CTkMessagebox(title="How to use",
+		message=readme_msg, icon="info", option_focus=1)
+	response.get()
+
+def display_about():
+	about_msg = "Mr. sam is the dopest math/science teacher on the planet"
+	CTkMessagebox(title="About",
+		message=about_msg, icon="info", option_focus=1)
+	response.get()
 
 def check_current_drive_folders():
 	folders_set = False
