@@ -74,9 +74,12 @@ def process_report_card_buttons():
 	#check for missing entries, prompt user
 	if checkbox_settings["cb_gen_pdfs"].get():
 		doitanyway = True
-		if not reports_ready:
+		if not checkbox_settings["cb_missing"].get():
 			doitanyway = messagebox.askyesno('Are you sure?',
-			'Report cards may be missing writeups.\nAre you sure you still want to generate PDFs?')
+			'You never checked for missing writeups.\nAre you sure you still want to generate PDFs?')
+		elif not reports_ready:
+			doitanyway = messagebox.askyesno('Are you sure?',
+			'Some report cards are missing writeups.\nAre you sure you still want to generate PDFs?')
 		print(f'doitanyway = {doitanyway}')
 		if doitanyway:
 			make_all_pdfs()
