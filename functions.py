@@ -478,4 +478,6 @@ def make_all_pdfs():
 		for doc in docs:
 			outfile = outdir_pdfs + doc["name"] + '.pdf'
 			export_google_doc_as_pdf(doc["id"], outfile)
-	print(f'\nreport PDFs saved to {outdir_pdfs}')
+	pdfdonestr = f'\nreport PDFs saved to {outdir_pdfs}'
+	print(pdfdonestr)
+	message(pdfdonestr)

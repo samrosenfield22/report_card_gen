@@ -133,7 +133,7 @@ def display_readme():
 
 def display_about():
 	about_msg = "Report card fixer/generator\nBy Mr. Sam, the dopest math/science teacher on the planet"
-	CTkMessagebox(title="About",
+	response = CTkMessagebox(title="About",
 		message=about_msg, icon="info", option_focus=1)
 	response.get()
 
@@ -257,7 +257,6 @@ def process_report_card_button():
 
 	CTkMessagebox(title="Info",
 		message="Done!", icon="info", option_focus=1)
-	msg('Report PDFs saved to /generated/PDFs')
 
 def main():
 	run_gui()
