@@ -70,6 +70,7 @@ def run_gui():
 	cb_emailtch = checkbox("cb_emailtch", "Email teachers with missing reports",
 	cb_x_indent, cb_y_pad,
 		'Email all teachers which reports are missing')
+	cb_emailtch.deselect()
 	cb_emailtch.configure(state="disabled")
 	checkbox("cb_gen_pdfs", "Generate PDFs", 0, cb_y_pad,
 		'Generate PDFs of all report cards')
@@ -77,6 +78,7 @@ def run_gui():
 	0, cb_y_pad,
 		'Email report cards to families')
 	cb_emailfams.configure(state="disabled")
+	cb_emailfams.deselect()
 
 	global button
 	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_button)
@@ -84,6 +86,7 @@ def run_gui():
 
 	msgbox = ctk.CTkTextbox(app, width=window_w - 50, height=250)
 	msgbox.pack(padx=10, pady=10, anchor='s')
+	msgbox.configure(state="disabled")
 
 	set_msg_callback()
 
@@ -128,15 +131,8 @@ def display_readme():
 	process.wait()
 	return
 
-	readme_msg = """
-	
-	"""
-	CTkMessagebox(title="How to use",
-		message=readme_msg, icon="info", option_focus=1)
-	response.get()
-
 def display_about():
-	about_msg = "Mr. sam is the dopest math/science teacher on the planet"
+	about_msg = "Report card fixer/generator\nBy Mr. Sam, the dopest math/science teacher on the planet"
 	CTkMessagebox(title="About",
 		message=about_msg, icon="info", option_focus=1)
 	response.get()
@@ -163,7 +159,9 @@ def check_current_drive_folders():
 		button.configure(state="disabled")
 
 def msgbox_clear():
+	msgbox.configure(state="normal")
 	msgbox.delete("1.0", "end")
+	msgbox.configure(state="disabled")
 
 def update_textbox():
 	global msgbox, msg_pending
@@ -173,8 +171,10 @@ def update_textbox():
 
 	#print('yeah!')
 	#msgbox.delete("1.0", "end")
+	msgbox.configure(state="normal")
 	msgbox.insert("end", msg_pending)
 	msgbox.see("end")
+	msgbox.configure(state="disabled")
 	msg_pending = ''
 
 	app.update()
@@ -250,8 +250,9 @@ def process_report_card_button():
 				message='Some report cards are missing writeups.\n(See generated/missing entries report.xlsx for details)\nAre you sure you still want to generate PDFs?',
 				icon="question", option_1="No", option_2="Yes")
 			doitanyway = response.get()
-		#print(f'doitanyway = {doitanyway}')
-		if doitanyway:
+		print(f'doitanyway = {doitanyway}')
+
+		if doitanyway == 'Yes':
 			make_all_pdfs()
 
 	CTkMessagebox(title="Info",

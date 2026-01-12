@@ -10,6 +10,13 @@ from googleapiclient.discovery import build
 #from googleapicliclient.errors import HttpError
 from googleapiclient.errors import HttpError
 
+import urllib.parse
+import secrets
+import webbrowser
+import requests
+import base64
+import hashlib
+
 #output to excel
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -22,12 +29,33 @@ from googleapiclient.http import MediaIoBaseDownload
 #gui
 import customtkinter as ctk
 
+#
+# Configuration from your OAuth provider
+AUTHORIZATION_BASE_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+TOKEN_URL = 'https://oauth2.googleapis.com/token'
+CLIENT_ID = "1014220566392-71t3a6aq4gug9hqf05a2nrnaca4a5jls.apps.googleusercontent.com"
+# Optional but highly recommended for security (CSRF protection)
+STATE = secrets.token_urlsafe(32)
+
 # If modifying these scopes, delete the file token.json.
 SCOPES = [
 	"https://www.googleapis.com/auth/documents",
 	"https://www.googleapis.com/auth/drive"
 ]
 #SCOPES = ["https://www.googleapis.com/auth/drive"]
+REDIRECT_URI = 'http://localhost:8080'
+
+# Build the parameters dictionary
+params = {
+    'response_type': 'code', # Indicates you want an authorization code
+    'client_id': CLIENT_ID,
+    'redirect_uri': REDIRECT_URI,
+    'scope': ' '.join(SCOPES), # Scopes are typically space-separated
+    'state': STATE,
+}
+
+# Construct the full URL
+auth_url = f"{AUTHORIZATION_BASE_URL}?{urllib.parse.urlencode(params)}"
 
 #ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
 ALL_DIRECTORIES = []
@@ -40,6 +68,8 @@ outdir_pdfs = outdir + 'PDFs/'
 
 current_doc_title = ''
 current_doc_id = ''
+
+FILE_IGNORE_STR = 'template'
 
 #
 missing_entries = {}
@@ -66,8 +96,37 @@ def authenticate_google_services():
 		else:
 			flow = InstalledAppFlow.from_client_secrets_file(
 				"credentials.json", SCOPES
-			)
+            )
 			creds = flow.run_local_server(port=0)
+
+			'''
+			#get authorization
+			#print(STATE)
+			webbrowser.open(auth_url)
+			authorization_code = input('Enter the full callback URL: ')
+
+			#flow = InstalledAppFlow.run_local_server
+
+			# use auth to get tokens
+			token_data = {
+	    		"client_id": CLIENT_ID,
+			    "redirect_uri": REDIRECT_URI,
+			    "code": authorization_code,
+			    "grant_type": "authorization_code",
+			    "code_verifier": STATE # PKCE requires the code verifier here
+			}
+			# Note: The client_secret is NOT included in the request data
+
+			response = requests.post(TOKEN_URL, data=token_data)
+			response.raise_for_status()
+			token_response = response.json()
+			print(f'got token: {token_response}')
+
+			access_token = token_response["access_token"]
+			refresh_token = token_response["refresh_token"] # Store this securely
+			quit()
+			'''
+
 		# Save the credentials for the next run
 		with open("token.json", "w") as token:
 			token.write(creds.to_json())
@@ -163,12 +222,18 @@ def missing_entries_report(outdir):
 	print("*	 missing entries report")
 	print('*' * 40)
 	ws.append(['Teacher', 'Missing reports', 'Link'])
+
+
+	#missings_set = set(missing_entries)
+	#missings_nodup = dict(missings_set)
 	for teacher,missings in missing_entries.items():
 		teach_msg = f'{teacher} is missing writeups in {len(missings)} reports:'
 		#print(f'{teacher} is missing writeups in {len(missings)} reports:')
 		print(teach_msg)
 		message(teach_msg)
 		ws.append([teacher])
+		#missings_set = set(missings)
+		#missings_nodup = list(missings_set)
 		for rep_name,rep_id in missings:
 			url = f"https://docs.google.com/document/d/{rep_id}/edit"
 			missing_msg = f'\t{rep_name}'
@@ -375,8 +440,9 @@ def process_all_report_cards(op_fix_fonts,
 		docs = folder_get_docs(folder_id)
 		#print(f'folder name: {docs[0]['name']}')
 		for doc in docs:
-			print(f'> reading doc {doc["name"]}')
-			process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
+			if not FILE_IGNORE_STR in doc["name"].lower():
+				print(f'> reading doc {doc["name"]}')
+				process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
 	print('\nFinished processing all report cards')
 
 	# outputs
