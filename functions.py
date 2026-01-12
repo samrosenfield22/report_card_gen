@@ -440,7 +440,7 @@ def process_all_report_cards(op_fix_fonts,
 		docs = folder_get_docs(folder_id)
 		#print(f'folder name: {docs[0]['name']}')
 		for doc in docs:
-			if not FILE_IGNORE_STR in doc["name"].lower():
+			if doc_is_valid(doc):
 				print(f'> reading doc {doc["name"]}')
 				process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
 	print('\nFinished processing all report cards')
@@ -476,8 +476,12 @@ def make_all_pdfs():
 	for folder_id in ALL_DIRECTORIES:
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
-			outfile = outdir_pdfs + doc["name"] + '.pdf'
-			export_google_doc_as_pdf(doc["id"], outfile)
+			if doc_is_valid(doc):
+				outfile = outdir_pdfs + doc["name"] + '.pdf'
+				export_google_doc_as_pdf(doc["id"], outfile)
 	pdfdonestr = f'\nreport PDFs saved to {outdir_pdfs}'
 	print(pdfdonestr)
 	message(pdfdonestr)
+
+def doc_is_valid(doc):
+	return not FILE_IGNORE_STR in doc["name"].lower()
