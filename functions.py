@@ -472,12 +472,19 @@ def process_all_report_cards(op_fix_fonts,
 
 def make_all_pdfs():
 	global outdir_pdfs
+	if os.path.exists(outdir_pdfs) and os.path.isdir(outdir_pdfs):
+		shutil.rmtree(outdir_pdfs)
 	os.makedirs(outdir_pdfs, exist_ok=True)
 	for folder_id in ALL_DIRECTORIES:
+		#put all pdfs in the folder
+		folder_name = folder_get_name(folder_id)
+		folder_dir = outdir_pdfs + folder_name + '/'
+		os.makedirs(folder_dir, exist_ok=True)
+
 		docs = folder_get_docs(folder_id)
 		for doc in docs:
 			if doc_is_valid(doc):
-				outfile = outdir_pdfs + doc["name"] + '.pdf'
+				outfile = folder_dir + doc["name"] + '.pdf'
 				export_google_doc_as_pdf(doc["id"], outfile)
 	pdfdonestr = f'\nreport PDFs saved to {outdir_pdfs}'
 	print(pdfdonestr)
