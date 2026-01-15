@@ -193,9 +193,13 @@ def msg(text, line="end"):
 	global msgbox
 	text += '\n'
 	msgbox.configure(state="normal")
-	msgbox.delete("2.0", "end")
+
 	print(f'deleting from {line} to end')
-	msgbox.insert("2.0", text)
+	msgbox.insert(line, text)
+	if not line == 'end':
+		ln = float(line) + 1
+		line = str(ln)
+	msgbox.delete(line, "end")
 	msgbox.configure(state="disabled")
 
 def msg_clear():
