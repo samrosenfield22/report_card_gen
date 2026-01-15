@@ -79,6 +79,7 @@ expected_font_family = 'Garamond'
 expected_font_size = 10
 
 message = None
+message_clear = None
 
 def authenticate_google_services():
 	global drive_service, docs_service
@@ -443,7 +444,7 @@ def process_all_report_cards(op_fix_fonts,
 			if doc_is_valid(doc):
 				reading_msg = f'> reading doc {doc["name"]}'
 				print(reading_msg)
-				message(reading_msg)
+				message(reading_msg, "2.0")
 				process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
 	print('\nFinished processing all report cards')
 

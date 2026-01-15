@@ -20,7 +20,6 @@ msgbox = None
 button = None
 checkbox_settings = {}
 CB_COUNT = 0
-msg_pending = ''
 
 def run_gui():
 	window_w = 600
@@ -90,7 +89,7 @@ def run_gui():
 	msgbox.pack(padx=10, pady=10, anchor='s')
 	msgbox.configure(state="disabled")
 
-	set_msg_callback()
+	set_msg_callbacks()
 
 	if not is_connected():
 		response = CTkMessagebox(title="Failed to connect",
@@ -102,7 +101,7 @@ def run_gui():
 
 	check_current_drive_folders()
 
-	app.after(10, update_textbox)
+	#app.after(10, update_textbox)
 
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
@@ -144,7 +143,7 @@ def check_current_drive_folders():
 
 	load_directory_ids()
 	folder_names = get_all_folder_names()
-	msgbox_clear()
+	msg_clear()
 	if not folder_names:
 		msg('No folders added.\nGet each folder ID by opening it in Google Drive, then copy the long string of characters after\nhttps://drive.google.com/drive/u/0/folders/\nThen go to File > Set google drive folder IDs to add those folder IDs\n')
 	else:
@@ -160,29 +159,7 @@ def check_current_drive_folders():
 	else:
 		button.configure(state="disabled")
 
-def msgbox_clear():
-	msgbox.configure(state="normal")
-	msgbox.delete("1.0", "end")
-	msgbox.configure(state="disabled")
 
-def update_textbox():
-	global msgbox, msg_pending
-	#textbox.see("end")
-
-
-
-	#print('yeah!')
-	#msgbox.delete("1.0", "end")
-	msgbox.configure(state="normal")
-	msgbox.insert("end", msg_pending)
-	msgbox.see("end")
-	msgbox.configure(state="disabled")
-	msg_pending = ''
-
-	app.update()
-
-	# Re-schedule the function to run again after 1000ms (1 second)
-	app.after(10, update_textbox)
 
 def checkbox(name, text, x, y, infotext):
 	global app
@@ -212,28 +189,38 @@ def checkbox(name, text, x, y, infotext):
 
 	return checkbox
 
-def msg(text):
+def msg(text, line="end"):
 	global msgbox
 	text += '\n'
 	msgbox.configure(state="normal")
-	msgbox.insert("end", text)
+	msgbox.delete("2.0", "end")
+	print(f'deleting from {line} to end')
+	msgbox.insert("2.0", text)
+	msgbox.configure(state="disabled")
 
-def message_cb_func(text):
-	global msg_pending
+def msg_clear():
+	msgbox.configure(state="normal")
+	msgbox.delete("1.0", "end")
+	msgbox.configure(state="disabled")
 
-	mystr = text + '\n'
-	msg_pending += mystr
+'''def msg_clear(clearfrom="3.0"):
+	print(f'clearing from {clearfrom} to end')
+	#msgbox.configure(state="normal")
+	if not clearfrom == "end":
+		msgbox.delete(clearfrom, "end")
+	#msgbox.configure(state="disabled")'''
 
 
-def set_msg_callback():
+def set_msg_callbacks():
 	#global message
-	functions.message = message_cb_func
+	functions.message = msg
+	functions.message_clear = msg_clear
 	#return message_cb
 
 def process_report_card_button():
 	def task_wrapper():
 		global checkbox_settings
-		msgbox_clear()
+		msg_clear()
 		msg('Scanning all report cards...')
 		reports_ready = process_all_report_cards(
 			checkbox_settings["cb_fixfonts"].get(),
