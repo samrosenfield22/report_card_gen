@@ -6,6 +6,7 @@ import subprocess
 import stat
 import socket
 import sys
+import threading
 
 #gui
 import customtkinter as ctk
@@ -74,11 +75,12 @@ def run_gui():
 	cb_emailtch.configure(state="disabled")
 	checkbox("cb_gen_pdfs", "Generate PDFs", 0, cb_y_pad,
 		'Generate PDFs of all report cards')
-	cb_emailfams = checkbox("cb_emailfams", "Email report cards to families",
+	'''cb_emailfams = checkbox("cb_emailfams", "Email report cards to families",
 	0, cb_y_pad,
 		'Email report cards to families')
 	cb_emailfams.configure(state="disabled")
 	cb_emailfams.deselect()
+	'''
 
 	global button
 	button = ctk.CTkButton(master=app, text="Process report cards", command=process_report_card_button)
@@ -229,34 +231,39 @@ def set_msg_callback():
 	#return message_cb
 
 def process_report_card_button():
-	global checkbox_settings
-	msgbox_clear()
-	msg('Scanning all report cards...')
-	reports_ready = process_all_report_cards(
-		checkbox_settings["cb_fixfonts"].get(),
-		checkbox_settings["cb_missing"].get())
+	def task_wrapper():
+		global checkbox_settings
+		msgbox_clear()
+		msg('Scanning all report cards...')
+		reports_ready = process_all_report_cards(
+			checkbox_settings["cb_fixfonts"].get(),
+			checkbox_settings["cb_missing"].get())
 
-	#if we're trying to generate pdfs but we didn't
-	#check for missing entries, prompt user
-	if checkbox_settings["cb_gen_pdfs"].get():
-		doitanyway = True
-		if not checkbox_settings["cb_missing"].get():
-			response = CTkMessagebox(title="Are you sure?",
-				message='You didn\'t check for missing writeups.\nAre you sure you still want to generate PDFs?',
-				icon="question", option_1="No", option_2="Yes")
-			doitanyway = response.get()
-		elif not reports_ready:
-			response = CTkMessagebox(title="Are you sure?",
-				message='Some report cards are missing writeups.\n(See generated/missing entries report.xlsx for details)\nAre you sure you still want to generate PDFs?',
-				icon="question", option_1="No", option_2="Yes")
-			doitanyway = response.get()
-		print(f'doitanyway = {doitanyway}')
+		#if we're trying to generate pdfs but we didn't
+		#check for missing entries, prompt user
+		if checkbox_settings["cb_gen_pdfs"].get():
+			doitanyway = True
+			if not checkbox_settings["cb_missing"].get():
+				response = CTkMessagebox(title="Are you sure?",
+					message='You didn\'t check for missing writeups.\nAre you sure you still want to generate PDFs?',
+					icon="question", option_1="No", option_2="Yes")
+				doitanyway = response.get()
+			elif not reports_ready:
+				response = CTkMessagebox(title="Are you sure?",
+					message='Some report cards are missing writeups.\n(See generated/missing entries report.xlsx for details)\nAre you sure you still want to generate PDFs?',
+					icon="question", option_1="No", option_2="Yes")
+				doitanyway = response.get()
+			print(f'doitanyway = {doitanyway}')
 
-		if doitanyway == 'Yes':
-			make_all_pdfs()
+			if doitanyway == 'Yes':
+				make_all_pdfs()
 
-	CTkMessagebox(title="Info",
-		message="Done!", icon="info", option_focus=1)
+		CTkMessagebox(title="Info",
+			message="Done!", icon="info", option_focus=1)
+
+	# Create and start a new thread for the task
+	thread = threading.Thread(target=task_wrapper)
+	thread.start()
 
 def main():
 	run_gui()

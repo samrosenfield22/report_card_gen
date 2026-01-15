@@ -2,6 +2,28 @@
 
 from openpyxl import load_workbook
 
+def send_bulk_emails(email_dict, sample_email):
+	#print(email_dict)
+	for email,children in email_dict.items():
+		print(f'to {email}:')
+		
+		cstr = children_list_to_str(children)
+		this_email = sample_email.replace('{children}', cstr)
+		print(this_email)
+		#for child in children:
+		#	print(f'{child}, ')
+
+def children_list_to_str(names):
+	cstr = ''
+	for child in names:
+		if child == names[-1]:
+			cstr += child
+		elif child == names[len(names)-2]:
+			cstr += f'{child} and '
+		else:
+			cstr += f'{child}, '
+	return cstr
+
 #converts the list of lists into a dictionary, with shared
 #email users as a list
 def email_list_to_dict(path):
@@ -28,4 +50,5 @@ def read_email_list(path):
 
 
 d = email_list_to_dict('dummy_emails.xlsx')
-print(d)
+sample_email = 'To whom it may concern:\nReport card(s) for {children} are attached below!\n'
+send_bulk_emails(d, sample_email)

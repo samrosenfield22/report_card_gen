@@ -441,7 +441,9 @@ def process_all_report_cards(op_fix_fonts,
 		#print(f'folder name: {docs[0]['name']}')
 		for doc in docs:
 			if doc_is_valid(doc):
-				print(f'> reading doc {doc["name"]}')
+				reading_msg = f'> reading doc {doc["name"]}'
+				print(reading_msg)
+				message(reading_msg)
 				process_doc(doc["id"], op_fix_fonts, op_missing_writeup_report)
 	print('\nFinished processing all report cards')
 
