@@ -194,13 +194,20 @@ def msg(text, line="end"):
 	text += '\n'
 	msgbox.configure(state="normal")
 
-	print(f'deleting from {line} to end')
+	#print(f'deleting from {line} to end')
 	msgbox.insert(line, text)
 	if not line == 'end':
 		ln = float(line) + 1
 		line = str(ln)
+		#line = f'\"{ln}.0\"'
 	msgbox.delete(line, "end")
 	msgbox.configure(state="disabled")
+
+def msg_overwrite_last(text):
+	global msgbox
+	lcnt = msgbox._textbox.count("1.0", "end", "displaylines")[0]
+	#cntstr = f'\"{lcnt}.0\"'
+	msg(text, int(lcnt))
 
 def msg_clear():
 	msgbox.configure(state="normal")
@@ -219,6 +226,7 @@ def set_msg_callbacks():
 	#global message
 	functions.message = msg
 	functions.message_clear = msg_clear
+	functions.message_overwrite_last = msg_overwrite_last
 	#return message_cb
 
 def process_report_card_button():

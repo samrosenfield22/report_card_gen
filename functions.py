@@ -80,6 +80,7 @@ expected_font_size = 10
 
 message = None
 message_clear = None
+message_overwrite_last = None
 
 def authenticate_google_services():
 	global drive_service, docs_service
@@ -224,14 +225,18 @@ def missing_entries_report(outdir):
 	print('*' * 40)
 	ws.append(['Teacher', 'Missing reports', 'Link'])
 
+	if missing_entries:
+		message('Teachers are missing entries! Check the report')
+	else:
+		message('All reports are good and ready to send out!')
 
 	#missings_set = set(missing_entries)
 	#missings_nodup = dict(missings_set)
 	for teacher,missings in missing_entries.items():
-		teach_msg = f'{teacher} is missing writeups in {len(missings)} reports:'
+		#teach_msg = f'{teacher} is missing writeups in {len(missings)} reports:'
 		#print(f'{teacher} is missing writeups in {len(missings)} reports:')
-		print(teach_msg)
-		message(teach_msg)
+		#print(teach_msg)
+		#message(teach_msg)
 		ws.append([teacher])
 		#missings_set = set(missings)
 		#missings_nodup = list(missings_set)
@@ -239,7 +244,7 @@ def missing_entries_report(outdir):
 			url = f"https://docs.google.com/document/d/{rep_id}/edit"
 			missing_msg = f'\t{rep_name}'
 			print(missing_msg)
-			message(missing_msg)
+			#message(missing_msg)
 			ws.append(['', rep_name, url])
 
 	bold_font = Font(bold=True)
@@ -453,7 +458,7 @@ def process_all_report_cards(op_fix_fonts,
 		global font_fixes
 		fontfix_str = f'\nTotal font fixes: {font_fixes}'
 		print(fontfix_str)
-		message(fontfix_str)
+		message(fontfix_str, "4.0")
 
 
 
@@ -470,14 +475,12 @@ def process_all_report_cards(op_fix_fonts,
 	#print(f'reports_ready = {reports_ready}')
 	return reports_ready
 
-	#if op_generate_pdfs:
-	#	make_all_pdfs()
-
 def make_all_pdfs():
 	global outdir_pdfs
 	if os.path.exists(outdir_pdfs) and os.path.isdir(outdir_pdfs):
 		shutil.rmtree(outdir_pdfs)
 	os.makedirs(outdir_pdfs, exist_ok=True)
+	message('Generating PDFs...')
 	for folder_id in ALL_DIRECTORIES:
 		#put all pdfs in the folder
 		folder_name = folder_get_name(folder_id)
@@ -489,7 +492,9 @@ def make_all_pdfs():
 			if doc_is_valid(doc):
 				outfile = folder_dir + doc["name"] + '.pdf'
 				export_google_doc_as_pdf(doc["id"], outfile)
-	pdfdonestr = f'\nreport PDFs saved to {outdir_pdfs}'
+				pdfstr = f'> saved PDF for {doc["name"]}'
+				message(pdfstr, "6.0")
+	pdfdonestr = f'\nReport PDFs saved to /{outdir_pdfs}'
 	print(pdfdonestr)
 	message(pdfdonestr)
 
