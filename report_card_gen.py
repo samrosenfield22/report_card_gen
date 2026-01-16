@@ -119,9 +119,9 @@ def email_wizard():
 	global app
 
 	window_w = 400
-	window_h = 400
+	window_h = 550
 	emwiz = ctk.CTkToplevel(app)
-	geometry_str = str(window_w) + "x" + str(window_h) + "+300+50"
+	geometry_str = str(window_w) + "x" + str(window_h) + "+200+50"
 	emwiz.geometry(geometry_str) # Set the window size and location
 	#emwiz.geometry("400x300")
 	emwiz.title("Email Wizard")
@@ -130,16 +130,20 @@ def email_wizard():
 	#label.pack(side="top", fill="both", expand=True, padx=40, pady=40)
 
 	#subj_ypad = 40
+	#box_ws = window_w - 50
+	#centering_offset = (window_w - box_ws)/2
+	box_x_off = 25
+	box_w = window_w - (2*box_x_off)
 	subjtxt = ctk.CTkLabel(emwiz, text="Subject:")
-	subjtxt.pack(anchor='w', padx=10, pady=(20,5))
-	subjbox = ctk.CTkTextbox(emwiz, width=window_w - 50, height=30)
-	subjbox.pack(padx=10, pady=(0,20), anchor='w')
+	subjtxt.pack(anchor='w', padx=box_x_off, pady=(20,5))
+	subjbox = ctk.CTkTextbox(emwiz, width=box_w, height=30)
+	subjbox.pack(padx=box_x_off, pady=(0,20), anchor='w')
 	subjbox.insert("0.0", 'hi')
 
 	bodytxt = ctk.CTkLabel(emwiz, text="Body:")
-	bodytxt.pack(anchor='w', padx=10, pady=(20,5))
-	bodybox = ctk.CTkTextbox(emwiz, width=window_w - 50, height=280)
-	bodybox.pack(padx=10, pady=(0,20), anchor='w')
+	bodytxt.pack(anchor='w', padx=box_x_off, pady=(20,5))
+	bodybox = ctk.CTkTextbox(emwiz, width=box_w, height=280)
+	bodybox.pack(padx=box_x_off, pady=(0,20), anchor='w')
 	bodybox.insert("0.0", 'dear sir...')
 
 	close_button = ctk.CTkButton(
