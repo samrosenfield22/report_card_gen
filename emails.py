@@ -1,14 +1,15 @@
 
-
+import sys
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from openpyxl import load_workbook
 
+teacher_emails = None
 
 user_email = "upper_campus@gmail.com"
-app_password = "your_16_char_app_password" # Use the generated App Password, not your regular password
+app_password = "???" # Use the generated App Password, not your regular password
 
 '''
 def email_all_families(email_dict, sample_email):
@@ -28,9 +29,15 @@ def email_all_families(email_dict, sample_email):
 '''
 #send_bulk_emails(data [name, addr, other], lambda, subject, body)
 def email_all_teachers(missing_entries):
+	global teacher_emails
+	teacher_emails = read_email_list('teacher_emails.xlsx')
+	#print(teacher_emails)
+
+
 	subject = 'Report cards Qx -- Missing Entries'
-	body = 'Dear {teacher}, you are missing writeups in the following report cards:\n{missing}\nfix it!!\nlove, sam'
+	body = 'Dear {teacher},\n\nYou are missing writeups in the following report cards:\n{missing}\nPlease fix these soon!\nSincerely,\nSam'
 	def missing_entry_compose_email(body, name, values):
+		#global teacher_emails
 		#print(name)
 		newbody = body.replace("{teacher}", name)
 		mstr = ''
@@ -40,7 +47,24 @@ def email_all_teachers(missing_entries):
 		newbody = newbody.replace("{missing}", mstr)
 		return newbody
 
+	#convert each name to their email address
+	print(missing_entries)
+	sys.exit()
+	def name_to_email(name):
+		return get_teacher_email(name)
+	missing_entries = {name_to_email(k): v for k,v in missing_entries.items()}
+
+
 	send_bulk_emails(missing_entries, missing_entry_compose_email, subject, body)
+
+def get_teacher_email(name):
+	global teacher_emails
+	this_email = None
+	for item in teacher_emails:
+		 if item[0] == name:
+				this_email = item[1]
+				break
+	return this_email
 
 '''
 f is a lambda/function that composes each email.
@@ -72,6 +96,11 @@ def send_email(dst_email, subject, body):
 	print(f'[Body]:\n{body}')
 	print('-' * 40)
 	return
+
+	#safeguard until it's well tested
+	if not dst_email == samrosenfield22@gmail.com:
+		print('only send email to me for now!')
+		sys.exit()
 
 
 	# Create a MIMEText object for the email body
