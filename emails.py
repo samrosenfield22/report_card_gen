@@ -28,20 +28,25 @@ def email_all_families(email_dict, sample_email):
 '''
 #send_bulk_emails(data [name, addr, other], lambda, subject, body)
 def email_all_teachers(missing_entries):
-	subject = 'what you are missing'
-	body = 'dear {teacher}, you are missing writeups in the following report cards:\n{missing}\nfix it!!\nlove, sam'
+	subject = 'Report cards Qx -- Missing Entries'
+	body = 'Dear {teacher}, you are missing writeups in the following report cards:\n{missing}\nfix it!!\nlove, sam'
 	def missing_entry_compose_email(body, name, values):
 		#print(name)
 		newbody = body.replace("{teacher}", name)
 		mstr = ''
 		for m in values:
-			mstr += f'\t{m[0]}\t{m[1]}\n'
-		#print()
+			url = f"https://docs.google.com/document/d/{m[1]}/edit"
+			mstr += f'\t{m[0]}\t{url}\n'
 		newbody = newbody.replace("{missing}", mstr)
 		return newbody
 
 	send_bulk_emails(missing_entries, missing_entry_compose_email, subject, body)
 
+'''
+f is a lambda/function that composes each email.
+it does this my modifying the "body" param, according to fields in the
+"data" item.
+'''
 #data [name, addr, other], f, subject, body
 def send_bulk_emails(data, f, subject, body):
 	for name,values in data.items():
@@ -61,10 +66,10 @@ def send_email(dst_email, subject, body):
 
 	#for now
 	print('-' * 40)
-	print(f'[From:\t\t{user_email}]')
-	print(f'[To:\t\t{dst_email}]')
-	print(f'[Subject:\t{subject}]')
-	print(body)
+	print(f'[From]:\t\t{user_email}')
+	print(f'[To:]\t\t{dst_email}')
+	print(f'[Subject]:\t{subject}')
+	print(f'[Body]:\n{body}')
 	print('-' * 40)
 	return
 

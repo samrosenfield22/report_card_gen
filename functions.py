@@ -303,9 +303,8 @@ def get_tables(document):
 			table = element.get('table')
 			#hdr_text = prev_elem.get('paragraph').get('elements').get('textRun').get('content')
 			hdr_text = prev_elem.get('paragraph').get('elements')[0].get('textRun').get('content')
-			teacher = hdr_text.replace('Teacher: ', '').rstrip()
-			#print(f"table w hdr: {teacher}")
-			#print(table)
+			teacher = hdr_text.replace('Teacher: ', '').strip()
+
 			all_tables.append([teacher, table])
 		prev_elem = element
 	return all_tables
