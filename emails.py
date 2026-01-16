@@ -47,15 +47,11 @@ def email_all_teachers(missing_entries):
 		newbody = newbody.replace("{missing}", mstr)
 		return newbody
 
-	#convert each name to their email address
-	print(missing_entries)
-	sys.exit()
-	def name_to_email(name):
-		return get_teacher_email(name)
-	missing_entries = {name_to_email(k): v for k,v in missing_entries.items()}
+	addresses = []
+	for name in missing_entries:
+		addresses.append(get_teacher_email(name))
 
-
-	send_bulk_emails(missing_entries, missing_entry_compose_email, subject, body)
+	send_bulk_emails(missing_entries, missing_entry_compose_email, addresses, subject, body)
 
 def get_teacher_email(name):
 	global teacher_emails
@@ -72,11 +68,13 @@ it does this my modifying the "body" param, according to fields in the
 "data" item.
 '''
 #data [name, addr, other], f, subject, body
-def send_bulk_emails(data, f, subject, body):
-	for name,values in data.items():
+def send_bulk_emails(data, f, addresses, subject, body):
+	for i, (name,values) in enumerate(data.items()):
+
+		#for name,values in data.items():
 		body_updated = f(body, name, values)
 		#send_email(item.get("addr"), subject, body_updated)
-		send_email(name, subject, body_updated)
+		send_email(addresses[i], subject, body_updated)
 
 
 #list of structure which contains "addr" and "email"
