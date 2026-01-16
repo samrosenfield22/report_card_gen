@@ -29,6 +29,9 @@ from googleapiclient.http import MediaIoBaseDownload
 #gui
 import customtkinter as ctk
 
+import emails
+from emails import *
+
 #
 # Configuration from your OAuth provider
 AUTHORIZATION_BASE_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -57,7 +60,6 @@ params = {
 # Construct the full URL
 auth_url = f"{AUTHORIZATION_BASE_URL}?{urllib.parse.urlencode(params)}"
 
-#ALL_DIRECTORIES = ['1DOHwWe-9nxBvhzzJ5xWsOUoBfL4EGQs9']
 ALL_DIRECTORIES = []
 
 drive_service = None
@@ -440,9 +442,6 @@ def load_directory_ids():
 			content = file.read()
 		global ALL_DIRECTORIES
 		ALL_DIRECTORIES = content.split('\n')
-		#print(f'using {len(ALL_DIRECTORIES)} directories')
-		#for each_id in dirids:
-		#	print(f'dirid: {each_id}')
 	except FileNotFoundError:
 		open('directory_ids.txt', 'w+')
 
@@ -478,12 +477,21 @@ def process_all_report_cards(op_fix_fonts,
 
 
 	if op_missing_writeup_report:
-		global outdir
-		os.makedirs(outdir, exist_ok=True)
-		missing_entries_report(outdir)
+		try:
+			global outdir
+			os.makedirs(outdir, exist_ok=True)
+			missing_entries_report(outdir)
+		except:
+			message('You need to close the missing entries report!')
+			#should be a message box! at least
+
 		if not missing_entries:
 			print('\nReports are complete and ready to go out to parents!!!')
 			reports_ready = True
+
+	#if op_email_teachers:
+	#	sample_email = read it from notepad txt doc
+	emails.email_all_teachers(missing_entries)
 
 	#reports_ready = not missing_entries
 	#print(f'missing_entries: {missing_entries}')

@@ -1,17 +1,93 @@
 
 
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 from openpyxl import load_workbook
 
-def send_bulk_emails(email_dict, sample_email):
+
+user_email = "upper_campus@gmail.com"
+app_password = "your_16_char_app_password" # Use the generated App Password, not your regular password
+
+'''
+def email_all_families(email_dict, sample_email):
 	#print(email_dict)
+
+	mail_list = [ for i in email_dict]
+
 	for email,children in email_dict.items():
-		print(f'to {email}:')
-		
+		#print(f'to {email}:')
+
 		cstr = children_list_to_str(children)
 		this_email = sample_email.replace('{children}', cstr)
-		print(this_email)
+		#print(this_email)
+		send_email(email, 'Your Q2 report cards', this_email)
 		#for child in children:
 		#	print(f'{child}, ')
+'''
+#send_bulk_emails(data [name, addr, other], lambda, subject, body)
+def email_all_teachers(missing_entries):
+	subject = 'what you are missing'
+	body = 'dear {teacher}, you are missing writeups in the following report cards:\n{missing}\nfix it!!\nlove, sam'
+	def missing_entry_compose_email(body, name, values):
+		#print(name)
+		newbody = body.replace("{teacher}", name)
+		mstr = ''
+		for m in values:
+			mstr += f'\t{m[0]}\t{m[1]}\n'
+		#print()
+		newbody = newbody.replace("{missing}", mstr)
+		return newbody
+
+	send_bulk_emails(missing_entries, missing_entry_compose_email, subject, body)
+
+#data [name, addr, other], f, subject, body
+def send_bulk_emails(data, f, subject, body):
+	for name,values in data.items():
+		body_updated = f(body, name, values)
+		#send_email(item.get("addr"), subject, body_updated)
+		send_email(name, subject, body_updated)
+
+
+#list of structure which contains "addr" and "email"
+#def send_bulk_emails(mail_list, subject):
+#	for addr,text in mail_list.items():
+#		send_email(addr, subject, text)
+
+def send_email(dst_email, subject, body):
+	global user_email
+	global app_password
+
+	#for now
+	print('-' * 40)
+	print(f'[From:\t\t{user_email}]')
+	print(f'[To:\t\t{dst_email}]')
+	print(f'[Subject:\t{subject}]')
+	print(body)
+	print('-' * 40)
+	return
+
+
+	# Create a MIMEText object for the email body
+	message = MIMEMultipart()
+	message["From"] = user_email
+	message["To"] = dst_email
+	message["Subject"] = subject
+	message.attach(MIMEText(body, "plain"))
+
+	# Connect to Gmail's SMTP server and send the email
+	try:
+		# Use port 465 for SSL or 587 for STARTTLS
+		# Port 465 with SMTP_SSL is often the easiest and most reliable
+		server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+		server.login(user_email, app_password)
+		server.send_message(message)
+		print("Email sent successfully!")
+	except Exception as e:
+		print(f"Error sending email: {e}")
+	finally:
+		server.quit() # Close the connection
 
 def children_list_to_str(names):
 	cstr = ''
@@ -49,6 +125,6 @@ def read_email_list(path):
 	return data_as_list
 
 
-d = email_list_to_dict('dummy_emails.xlsx')
-sample_email = 'To whom it may concern:\nReport card(s) for {children} are attached below!\n'
-send_bulk_emails(d, sample_email)
+#d = email_list_to_dict('dummy_emails.xlsx')
+#sample_email = 'To whom it may concern:\nReport card(s) for {children} are attached below!\n\nSincerely,\nAdministrator'
+#send_bulk_emails(d, sample_email)
