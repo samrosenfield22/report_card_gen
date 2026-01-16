@@ -107,9 +107,43 @@ def run_gui():
 
 	#app.after(10, update_textbox)
 
+	email_wizard()
+
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
+
+
+
+def email_wizard():
+	global app
+
+	print('opening wizard')
+
+	window_w = 400
+	window_h = 400
+	emwiz = ctk.CTkToplevel(app)
+	geometry_str = str(window_w) + "x" + str(window_h) + "+300+50"
+	emwiz.geometry(geometry_str) # Set the window size and location
+	#emwiz.geometry("400x300")
+	emwiz.title("Email Wizard")
+
+	#label = ctk.CTkLabel(emwiz, text="Auto emailer")
+	#label.pack(side="top", fill="both", expand=True, padx=40, pady=40)
+
+	#subj_ypad = 40
+	subjtxt = ctk.CTkLabel(emwiz, text="Subject:")
+	subjtxt.pack(anchor='w', padx=10, pady=(20,5))
+	subjbox = ctk.CTkTextbox(emwiz, width=window_w - 50, height=30)
+	subjbox.pack(padx=10, pady=(0,20), anchor='w')
+	subjbox.insert("0.0", 'hi')
+
+	bodytxt = ctk.CTkLabel(emwiz, text="Body:")
+	bodytxt.pack(anchor='w', padx=10, pady=(20,5))
+	bodybox = ctk.CTkTextbox(emwiz, width=window_w - 50, height=280)
+	bodybox.pack(padx=10, pady=(0,20), anchor='w')
+	bodybox.insert("0.0", 'dear sir...')
+
 
 
 def is_connected():
@@ -234,6 +268,8 @@ def set_msg_callbacks():
 	#return message_cb
 
 def process_report_card_button():
+
+
 	def task_wrapper():
 		global checkbox_settings
 		msg_clear()
@@ -243,6 +279,7 @@ def process_report_card_button():
 			checkbox_settings["cb_missing"].get())
 
 		if checkbox_settings["cb_emailtch"].get():
+			email_wizard()
 			emails.email_all_teachers(missing_entries)
 
 		#if we're trying to generate pdfs but we didn't
