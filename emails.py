@@ -49,7 +49,11 @@ def email_all_teachers(missing_entries):
 
 	addresses = []
 	for name in missing_entries:
-		addresses.append(get_teacher_email(name))
+		tchemail = get_teacher_email(name)
+		if not tchemail or tchemail.strip() == '':
+			print(f'No email found for {name}!')
+			sys.exit()
+		addresses.append(tchemail)
 
 	send_bulk_emails(missing_entries, missing_entry_compose_email, addresses, subject, body)
 

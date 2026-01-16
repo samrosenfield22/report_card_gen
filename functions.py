@@ -29,8 +29,6 @@ from googleapiclient.http import MediaIoBaseDownload
 #gui
 import customtkinter as ctk
 
-import emails
-from emails import *
 
 #
 # Configuration from your OAuth provider
@@ -236,10 +234,11 @@ def missing_entries_report(outdir):
 	ws.column_dimensions['A'].width = 15
 	ws.column_dimensions['B'].width = 35
 
-	print('')
+	'''print('')
 	print('*' * 40)
 	print("*	 missing entries report")
 	print('*' * 40)
+	'''
 	ws.append(['Teacher', 'Missing reports', 'Link'])
 
 	if missing_entries:
@@ -260,7 +259,7 @@ def missing_entries_report(outdir):
 		for rep_name,rep_id in missings:
 			url = f"https://docs.google.com/document/d/{rep_id}/edit"
 			missing_msg = f'\t{rep_name}'
-			print(missing_msg)
+			#print(missing_msg)
 			#message(missing_msg)
 			ws.append(['', rep_name, url])
 
@@ -490,12 +489,12 @@ def process_all_report_cards(op_fix_fonts,
 
 	#if op_email_teachers:
 	#	sample_email = read it from notepad txt doc
-	emails.email_all_teachers(missing_entries)
+	#emails.email_all_teachers(missing_entries)
 
 	#reports_ready = not missing_entries
 	#print(f'missing_entries: {missing_entries}')
 	#print(f'reports_ready = {reports_ready}')
-	return reports_ready
+	return (reports_ready, missing_entries)
 
 def make_all_pdfs():
 	global outdir_pdfs

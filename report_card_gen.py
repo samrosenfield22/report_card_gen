@@ -1,6 +1,10 @@
 
 import functions
 from functions import *
+
+import emails
+from emails import *
+
 #import time
 import subprocess
 import stat
@@ -70,8 +74,8 @@ def run_gui():
 	cb_emailtch = checkbox("cb_emailtch", "Email teachers with missing reports",
 	cb_x_indent, cb_y_pad,
 		'Email all teachers which reports are missing')
-	cb_emailtch.deselect()
-	cb_emailtch.configure(state="disabled")
+	#cb_emailtch.deselect()
+	#cb_emailtch.configure(state="disabled")
 	checkbox("cb_gen_pdfs", "Generate PDFs", 0, cb_y_pad,
 		'Generate PDFs of all report cards')
 	'''cb_emailfams = checkbox("cb_emailfams", "Email report cards to families",
@@ -234,9 +238,12 @@ def process_report_card_button():
 		global checkbox_settings
 		msg_clear()
 		msg('Scanning all report cards...')
-		reports_ready = process_all_report_cards(
+		(reports_ready, missing_entries) = process_all_report_cards(
 			checkbox_settings["cb_fixfonts"].get(),
 			checkbox_settings["cb_missing"].get())
+
+		if checkbox_settings["cb_emailtch"].get():
+			emails.email_all_teachers(missing_entries)
 
 		#if we're trying to generate pdfs but we didn't
 		#check for missing entries, prompt user
