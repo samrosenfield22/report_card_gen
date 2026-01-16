@@ -118,8 +118,6 @@ def run_gui():
 def email_wizard():
 	global app
 
-	print('opening wizard')
-
 	window_w = 400
 	window_h = 400
 	emwiz = ctk.CTkToplevel(app)
@@ -143,6 +141,13 @@ def email_wizard():
 	bodybox = ctk.CTkTextbox(emwiz, width=window_w - 50, height=280)
 	bodybox.pack(padx=10, pady=(0,20), anchor='w')
 	bodybox.insert("0.0", 'dear sir...')
+
+	close_button = ctk.CTkButton(
+		emwiz,
+		text="Confirm",
+		command=lambda: emwiz.destroy()
+	)
+	close_button.pack(pady=20)
 
 
 
