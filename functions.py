@@ -181,8 +181,8 @@ def folder_get_docs(folder_id):
 			# Query to list files where the 'parent' is the specified folder ID
 			# and it's not a folder itself (to list 'docs'/files only)
 
-			#query = f"'{folder_id}' in parents and mimeType != 'application/vnd.google-apps.folder'"
-			query = f"'{folder_id}' in parents"
+			query = f"'{folder_id}' in parents and mimeType != 'application/vnd.google-apps.folder' and trashed = false"
+			#query = f"'{folder_id}' in parents"
 			results = drive_service.files().list(
 				q=query,
 				pageSize=10, # Adjust pageSize as needed
@@ -192,7 +192,7 @@ def folder_get_docs(folder_id):
 				includeItemsFromAllDrives=True).execute()
 
 			items.extend(results.get('files', []))
-			files = []
+			'''files = []
 			for i in items:
 				if i.get('mimeType') == 'application/vnd.google-apps.folder':
 					print(f'recursively searching folder {i.get('name')} with id {i.get('id')}')
@@ -204,7 +204,7 @@ def folder_get_docs(folder_id):
 				#print(morefiles)
 				if morefiles:
 					files.append(morefiles)
-			print(files)
+			print(files)'''
 			page_token = results.get('nextPageToken', None)
 			if page_token is None:
 				break
@@ -212,8 +212,8 @@ def folder_get_docs(folder_id):
 		print(f'An error occurred: {error}')
 		return []
 
-	return files
-	#return items
+	#return files
+	return items
 
 def process_doc(DOCUMENT_ID, op_fix_fonts, op_missing_writeup_report):
 	doc = open_doc(DOCUMENT_ID)
