@@ -1,4 +1,5 @@
 credentials.json
+token.json
 missing entries report.xlsx
 generated/*
 __pycache__/*
