@@ -108,10 +108,6 @@ def run_gui():
 
 	check_current_drive_folders()
 
-	#app.after(10, update_textbox)
-
-	#email_wizard()
-
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
 	app.mainloop()
@@ -127,14 +123,12 @@ def email_wizard():
 	geometry_str = str(window_w) + "x" + str(window_h) + "+200+50"
 	emwiz.geometry(geometry_str) # Set the window size and location
 	#emwiz.geometry("400x300")
-	emwiz.title("Email Wizard")
+	emwiz.title("Email Config Wizard")
 
 	#label = ctk.CTkLabel(emwiz, text="Auto emailer")
 	#label.pack(side="top", fill="both", expand=True, padx=40, pady=40)
 
-	#subj_ypad = 40
-	#box_ws = window_w - 50
-	#centering_offset = (window_w - box_ws)/2
+	#add textboxes and labels
 	box_x_off = 25
 	box_w = window_w - (2*box_x_off)
 	subjtxt = ctk.CTkLabel(emwiz, text="Subject:")
@@ -151,6 +145,18 @@ def email_wizard():
 	default_body = shared.file_read_ifnot_create('user/default_email_body.txt')
 	bodybox.insert("0.0", default_body)
 
+	def save_to_template():
+		shared.file_write('user/default_email_subject.txt', subjbox.get("0.0", "end"))
+		shared.file_write('user/default_email_body.txt', bodybox.get("0.0", "end"))
+
+	save_to_template_button = ctk.CTkButton(
+		emwiz,
+		text="Save to template",
+		command=lambda: save_to_template()
+	)
+	save_to_template_button.pack(padx=10, pady=8)
+
+	#function to populate text boxes
 	subject = [None]
 	body = [None]
 	def wiz_close():
@@ -163,7 +169,9 @@ def email_wizard():
 		text="Confirm",
 		command=lambda: wiz_close()
 	)
-	close_button.pack(pady=20)
+	close_button.pack(anchor='s', pady=15)
+
+
 
 	emwiz.wait_window()
 	#print(f'subject: {subject[0]}')
