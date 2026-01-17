@@ -1,5 +1,6 @@
 
 
+
 def file_read_ifnot_create(path):
 	content = ''
 	try:

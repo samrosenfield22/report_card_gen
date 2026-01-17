@@ -6,6 +6,11 @@ from email.mime.multipart import MIMEMultipart
 
 from openpyxl import load_workbook
 
+from CTkMessagebox import CTkMessagebox
+
+import shared
+from shared import *
+
 teacher_emails = None
 
 user_email = "samrosenfield22@gmail.com"
@@ -79,6 +84,16 @@ it does this my modifying the "body" param, according to fields in the
 '''
 #data [name, addr, other], f, subject, body
 def send_bulk_emails(data, f, addresses, subject, body):
+
+	#load email address
+	global user_email
+	user_email = shared.file_read_ifnot_create('user/email_address.txt')
+	if user_email == '':
+		response = CTkMessagebox(title="Failure",
+			message="No email address set!", icon="warning", option_focus=1)
+		response.get()
+		sys.exit()
+
 	for i, (name,values) in enumerate(data.items()):
 
 		#for name,values in data.items():
