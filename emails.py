@@ -8,8 +8,8 @@ from openpyxl import load_workbook
 
 teacher_emails = None
 
-user_email = "upper_campus@gmail.com"
-app_password = "???" # Use the generated App Password, not your regular password
+user_email = "samrosenfield22@gmail.com"
+app_password = "zwab mnfa xiag asht" # Use the generated App Password, not your regular password
 
 '''
 def email_all_families(email_dict, sample_email):
@@ -97,10 +97,10 @@ def send_email(dst_email, subject, body):
 	print(f'[Subject]:\t{subject}')
 	print(f'[Body]:\n{body}')
 	print('-' * 40)
-	return
+	#return
 
 	#safeguard until it's well tested
-	if not dst_email == samrosenfield22@gmail.com:
+	if not dst_email == 'idriselbasaur@gmail.com':
 		print('only send email to me for now!')
 		sys.exit()
 
