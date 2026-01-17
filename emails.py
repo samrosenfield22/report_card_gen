@@ -39,12 +39,18 @@ def email_all_teachers(missing_entries, subject, body):
 	def missing_entry_compose_email(body, name, values):
 		#global teacher_emails
 		#print(name)
-		newbody = body.replace("{teacher}", name)
+		newbody = body.replace("{teachername}", name)
+		if newbody == body:
+			print(f'Failed to replace teacher name for {name}!')
+			return None
 		mstr = ''
 		for m in values:
 			url = f"https://docs.google.com/document/d/{m[1]}/edit"
-			mstr += f'\t{m[0]}\t{url}\n'
+			mstr += f'\t{m[0]}:\t{url}\n'
 		newbody = newbody.replace("{missingwriteups}", mstr)
+		if newbody == body:
+			print(f'Failed to replace teacher name for {name}!')
+			return None
 		return newbody
 
 	addresses = []
@@ -77,6 +83,8 @@ def send_bulk_emails(data, f, addresses, subject, body):
 
 		#for name,values in data.items():
 		body_updated = f(body, name, values)
+		if body_updated == None:
+			continue
 		#send_email(item.get("addr"), subject, body_updated)
 		send_email(addresses[i], subject, body_updated)
 
@@ -91,13 +99,14 @@ def send_email(dst_email, subject, body):
 	global app_password
 
 	#for now
-	print('-' * 40)
+	'''print('-' * 40)
 	print(f'[From]:\t\t{user_email}')
 	print(f'[To:]\t\t{dst_email}')
 	print(f'[Subject]:\t{subject}')
 	print(f'[Body]:\n{body}')
-	print('-' * 40)
+	print('-' * 40)'''
 	#return
+	print(f'\t~ sending email from {user_email} to {dst_email} ~')
 
 	#safeguard until it's well tested
 	if not dst_email == 'idriselbasaur@gmail.com':
