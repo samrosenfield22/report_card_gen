@@ -315,6 +315,7 @@ def process_report_card_button():
 		if checkbox_settings["cb_emailtch"].get():
 			(subject, body) = email_wizard()
 			emails.email_all_teachers(missing_entries, subject, body)
+			msg('Emailed teachers!')
 
 		#if we're trying to generate pdfs but we didn't
 		#check for missing entries, prompt user
@@ -330,7 +331,7 @@ def process_report_card_button():
 					message='Some report cards are missing writeups.\n(See generated/missing entries report.xlsx for details)\nAre you sure you still want to generate PDFs?',
 					icon="question", option_1="No", option_2="Yes")
 				doitanyway = response.get()
-			print(f'doitanyway = {doitanyway}')
+			#print(f'doitanyway = {doitanyway}')
 
 			if doitanyway == 'Yes':
 				make_all_pdfs()

@@ -13,8 +13,8 @@ from shared import *
 
 teacher_emails = None
 
-user_email = "samrosenfield22@gmail.com"
-app_password = "zwab mnfa xiag asht" # Use the generated App Password, not your regular password
+user_email = None
+app_password = None # Use the generated App Password, not your regular password
 
 '''
 def email_all_families(email_dict, sample_email):
@@ -85,12 +85,13 @@ it does this my modifying the "body" param, according to fields in the
 #data [name, addr, other], f, subject, body
 def send_bulk_emails(data, f, addresses, subject, body):
 
-	#load email address
-	global user_email
+	#load email address and app password
+	global user_email, app_password
 	user_email = shared.file_read_ifnot_create('user/email_address.txt')
-	if user_email == '':
+	app_password = shared.file_read_ifnot_create('user/app_password.txt')
+	if user_email == '' or app_password == '':
 		response = CTkMessagebox(title="Failure",
-			message="No email address set!", icon="warning", option_focus=1)
+			message="No email address or app password set!", icon="warning", option_focus=1)
 		response.get()
 		sys.exit()
 
