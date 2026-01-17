@@ -138,13 +138,15 @@ def email_wizard():
 	subjtxt.pack(anchor='w', padx=box_x_off, pady=(20,5))
 	subjbox = ctk.CTkTextbox(emwiz, width=box_w, height=30)
 	subjbox.pack(padx=box_x_off, pady=(0,20), anchor='w')
-	subjbox.insert("0.0", 'hi')
+	default_subject = file_read('user/default_email_subject.txt')
+	subjbox.insert("0.0", default_subject)
 
 	bodytxt = ctk.CTkLabel(emwiz, text="Body:")
 	bodytxt.pack(anchor='w', padx=box_x_off, pady=(20,5))
 	bodybox = ctk.CTkTextbox(emwiz, width=box_w, height=280)
-	bodybox.pack(padx=box_x_off, pady=(0,20), anchor='w')
-	bodybox.insert("0.0", 'dear sir...')
+	bodybox.pack(padx=box_x_off, pady=(0,12), anchor='w')
+	default_body = file_read('user/default_email_body.txt')
+	bodybox.insert("0.0", default_body)
 
 	close_button = ctk.CTkButton(
 		emwiz,
@@ -153,6 +155,17 @@ def email_wizard():
 	)
 	close_button.pack(pady=20)
 
+def file_read(path):
+	file_content = None
+	try:
+		with open(path, 'r', encoding='utf-8') as file:
+			file_content = file.read()
+		#print(file_content)
+	except FileNotFoundError:
+		print(f"Error: The file '{path}' was not found.")
+	except Exception as e:
+		print(f"An error occurred: {e}")
+	return file_content
 
 
 def is_connected():
@@ -167,7 +180,7 @@ def is_connected():
 
 def open_notepad_dir_ids():
 	notepad_path = r"C:\Windows\System32\notepad.exe"
-	process = subprocess.Popen([notepad_path, 'directory_ids'])
+	process = subprocess.Popen([notepad_path, 'user/directory_ids'])
 	process.wait()
 	check_current_drive_folders()
 

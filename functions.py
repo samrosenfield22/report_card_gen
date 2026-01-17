@@ -436,7 +436,7 @@ def export_google_doc_as_pdf(file_id, output_path):
 
 def load_directory_ids():
 	try:
-		with open("directory_ids.txt", "r") as file:
+		with open("user/directory_ids.txt", "r") as file:
 			content = file.read()
 		global ALL_DIRECTORIES
 		ALL_DIRECTORIES = content.split('\n')

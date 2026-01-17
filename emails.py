@@ -30,7 +30,7 @@ def email_all_families(email_dict, sample_email):
 #send_bulk_emails(data [name, addr, other], lambda, subject, body)
 def email_all_teachers(missing_entries):
 	global teacher_emails
-	teacher_emails = read_email_list('teacher_emails.xlsx')
+	teacher_emails = read_email_list('user/teacher_emails.xlsx')
 	#print(teacher_emails)
 
 
