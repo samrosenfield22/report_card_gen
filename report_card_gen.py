@@ -107,7 +107,7 @@ def run_gui():
 
 	#app.after(10, update_textbox)
 
-	email_wizard()
+	#email_wizard()
 
 	#Start the application loop
 	# This method runs the application and waits for user interaction until the window is closed
@@ -148,12 +148,25 @@ def email_wizard():
 	default_body = file_read('user/default_email_body.txt')
 	bodybox.insert("0.0", default_body)
 
+	subject = [None]
+	body = [None]
+	def wiz_close():
+		subject[0] = subjbox.get("0.0", "end")
+		body[0] = bodybox.get("0.0", "end")
+		emwiz.destroy()
+
 	close_button = ctk.CTkButton(
 		emwiz,
 		text="Confirm",
-		command=lambda: emwiz.destroy()
+		command=lambda: wiz_close()
 	)
 	close_button.pack(pady=20)
+
+	emwiz.wait_window()
+	#print(f'subject: {subject[0]}')
+	#sys.exit()
+	return (subject[0], body[0])
+	#return text from (subject, body)
 
 def file_read(path):
 	file_content = None
@@ -301,8 +314,8 @@ def process_report_card_button():
 			checkbox_settings["cb_missing"].get())
 
 		if checkbox_settings["cb_emailtch"].get():
-			email_wizard()
-			emails.email_all_teachers(missing_entries)
+			(subject, body) = email_wizard()
+			emails.email_all_teachers(missing_entries, subject, body)
 
 		#if we're trying to generate pdfs but we didn't
 		#check for missing entries, prompt user

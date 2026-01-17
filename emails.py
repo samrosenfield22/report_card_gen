@@ -28,14 +28,14 @@ def email_all_families(email_dict, sample_email):
 		#	print(f'{child}, ')
 '''
 #send_bulk_emails(data [name, addr, other], lambda, subject, body)
-def email_all_teachers(missing_entries):
+def email_all_teachers(missing_entries, subject, body):
 	global teacher_emails
 	teacher_emails = read_email_list('user/teacher_emails.xlsx')
 	#print(teacher_emails)
 
 
-	subject = 'Report cards Qx -- Missing Entries'
-	body = 'Dear {teacher},\n\nYou are missing writeups in the following report cards:\n{missing}\nPlease fix these soon!\nSincerely,\nSam'
+	#subject = 'Report cards Qx -- Missing Entries'
+	#body = 'Dear {teacher},\n\nYou are missing writeups in the following report cards:\n{missing}\nPlease fix these soon!\nSincerely,\nSam'
 	def missing_entry_compose_email(body, name, values):
 		#global teacher_emails
 		#print(name)

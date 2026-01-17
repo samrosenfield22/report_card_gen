@@ -1,3 +1,10 @@
-Dear person, hi!
+Dear {teachername},
 
--Sam
+You are missing writeups in the following report cards:
+{missing}
+
+Please fix these soon!
+
+Sincerely,
+
+Sam
