@@ -1,7 +1,7 @@
 Dear {teachername},
 
 You are missing writeups in the following report cards:
-{missing}
+{missingwriteups}
 
 Please fix these soon!
 

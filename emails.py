@@ -44,7 +44,7 @@ def email_all_teachers(missing_entries, subject, body):
 		for m in values:
 			url = f"https://docs.google.com/document/d/{m[1]}/edit"
 			mstr += f'\t{m[0]}\t{url}\n'
-		newbody = newbody.replace("{missing}", mstr)
+		newbody = newbody.replace("{missingwriteups}", mstr)
 		return newbody
 
 	addresses = []
