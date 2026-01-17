@@ -5,6 +5,9 @@ from functions import *
 import emails
 from emails import *
 
+import shared
+from shared import *
+
 #import time
 import subprocess
 import stat
@@ -138,14 +141,14 @@ def email_wizard():
 	subjtxt.pack(anchor='w', padx=box_x_off, pady=(20,5))
 	subjbox = ctk.CTkTextbox(emwiz, width=box_w, height=30)
 	subjbox.pack(padx=box_x_off, pady=(0,20), anchor='w')
-	default_subject = file_read('user/default_email_subject.txt')
+	default_subject = shared.file_read_ifnot_create('user/default_email_subject.txt')
 	subjbox.insert("0.0", default_subject)
 
 	bodytxt = ctk.CTkLabel(emwiz, text="Body:")
 	bodytxt.pack(anchor='w', padx=box_x_off, pady=(20,5))
 	bodybox = ctk.CTkTextbox(emwiz, width=box_w, height=280)
 	bodybox.pack(padx=box_x_off, pady=(0,12), anchor='w')
-	default_body = file_read('user/default_email_body.txt')
+	default_body = shared.file_read_ifnot_create('user/default_email_body.txt')
 	bodybox.insert("0.0", default_body)
 
 	subject = [None]
@@ -167,18 +170,6 @@ def email_wizard():
 	#sys.exit()
 	return (subject[0], body[0])
 	#return text from (subject, body)
-
-def file_read(path):
-	file_content = None
-	try:
-		with open(path, 'r', encoding='utf-8') as file:
-			file_content = file.read()
-		#print(file_content)
-	except FileNotFoundError:
-		print(f"Error: The file '{path}' was not found.")
-	except Exception as e:
-		print(f"An error occurred: {e}")
-	return file_content
 
 
 def is_connected():

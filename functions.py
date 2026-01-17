@@ -29,6 +29,8 @@ from googleapiclient.http import MediaIoBaseDownload
 #gui
 import customtkinter as ctk
 
+import shared
+from shared import *
 
 #
 # Configuration from your OAuth provider
@@ -435,13 +437,16 @@ def export_google_doc_as_pdf(file_id, output_path):
 	print(f"Successfully downloaded '{output_path}'")
 
 def load_directory_ids():
-	try:
+	'''try:
 		with open("user/directory_ids.txt", "r") as file:
 			content = file.read()
 		global ALL_DIRECTORIES
 		ALL_DIRECTORIES = content.split('\n')
 	except FileNotFoundError:
-		open('directory_ids.txt', 'w+')
+		open('directory_ids.txt', 'w+')'''
+	content = shared.file_read_ifnot_create('user/directory_ids.txt')
+	global ALL_DIRECTORIES
+	ALL_DIRECTORIES = content.split('\n')
 
 def process_all_report_cards(op_fix_fonts,
 	op_missing_writeup_report):
