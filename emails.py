@@ -39,16 +39,13 @@ def email_all_teachers(missing_entries, subject, body):
 	teacher_emails = read_email_list('user/teacher_emails.xlsx')
 	#print(teacher_emails)
 
-
-	#subject = 'Report cards Qx -- Missing Entries'
-	#body = 'Dear {teacher},\n\nYou are missing writeups in the following report cards:\n{missing}\nPlease fix these soon!\nSincerely,\nSam'
 	def missing_entry_compose_email(body, name, values):
 		#global teacher_emails
 		#print(name)
 		newbody = body.replace("{teachername}", name)
 		if newbody == body:
 			print(f'Failed to replace teacher name for {name}!')
-			fails += name
+			fails.append(name)
 			return None
 		mstr = ''
 		for m in values:
@@ -57,7 +54,7 @@ def email_all_teachers(missing_entries, subject, body):
 		newbody = newbody.replace("{missingwriteups}", mstr)
 		if newbody == body:
 			print(f'Failed to replace teacher name for {name}!')
-			fails += name
+			fails.append(name)
 			return None
 		return newbody
 
