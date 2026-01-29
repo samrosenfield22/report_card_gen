@@ -35,6 +35,7 @@ def email_all_families(email_dict, sample_email):
 #send_bulk_emails(data [name, addr, other], lambda, subject, body)
 def email_all_teachers(missing_entries, subject, body):
 	global teacher_emails
+	fails = []
 	teacher_emails = read_email_list('user/teacher_emails.xlsx')
 	#print(teacher_emails)
 
@@ -47,6 +48,7 @@ def email_all_teachers(missing_entries, subject, body):
 		newbody = body.replace("{teachername}", name)
 		if newbody == body:
 			print(f'Failed to replace teacher name for {name}!')
+			fails += name
 			return None
 		mstr = ''
 		for m in values:
@@ -55,6 +57,7 @@ def email_all_teachers(missing_entries, subject, body):
 		newbody = newbody.replace("{missingwriteups}", mstr)
 		if newbody == body:
 			print(f'Failed to replace teacher name for {name}!')
+			fails += name
 			return None
 		return newbody
 
@@ -63,10 +66,21 @@ def email_all_teachers(missing_entries, subject, body):
 		tchemail = get_teacher_email(name)
 		if not tchemail or tchemail.strip() == '':
 			print(f'No email found for {name}!')
-			sys.exit()
+			fails.append(name)
+			continue
+			#sys.exit()
 		addresses.append(tchemail)
 
+	if fails:
+		failstr = '\n'.join(fails)
+		mbox = f'Missing emails in user/teacher_emails.xlsx for the following teachers:\n\n{failstr}'
+		response = CTkMessagebox(title="Failure",
+			message=mbox, icon="warning", option_focus=1)
+		response.get()
+		sys.exit()
+
 	send_bulk_emails(missing_entries, missing_entry_compose_email, addresses, subject, body)
+
 
 def get_teacher_email(name):
 	global teacher_emails
